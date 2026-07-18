@@ -1,36 +1,38 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Home from "./views/pages/home-page.vue";
+import { session } from "./auth/session.js";
 
 const routes = [
 	{
+		path: "/login",
+		name: "Login",
+		component: () => import("./views/authentication/login-page.vue"),
+		meta: { title: "Login" },
+	},
+	{
+		path: "/register",
+		name: "Register",
+		component: () => import("./views/authentication/register-page.vue"),
+		meta: { title: "Daftar Akun" },
+	},
+	{
 		path: "/",
 		name: "Home",
-		component: Home,
-		meta: {
-			title: "Dashboard - Katalogin",
-			requiresAuth: false,
-		},
+		component: () => import("./views/pages/home-page.vue"),
+		meta: { requiresAuth: true, title: "Dashboard" },
 	},
-	// {
-	// 	path: "/login",
-	// 	name: "Login",
-
-	// 	component: () => import("./views/pages/login-page.vue"),
-	// 	meta: {
-	// 		title: "Masuk - Katalogin",
-	// 		requiresAuth: false,
-	// 	},
-	// },
 ];
 
 const router = createRouter({
-	history: createWebHistory(),
+	history: createWebHistory("/bizpage"),
 	routes,
 });
 
 router.beforeEach((to, from, next) => {
-	document.title = to.meta.title || "Katalogin";
-	next();
+	if (to.meta.requiresAuth && !session.isLoggedIn) {
+		next({ name: "Login", query: { redirect: to.fullPath } });
+	} else {
+		next();
+	}
 });
 
 export default router;
