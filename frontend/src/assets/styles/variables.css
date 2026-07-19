@@ -1,0 +1,53 @@
+:root {
+	--font-body: "Inter", -apple-system, sans-serif;
+	--font-display: "Plus Jakarta Sans", -apple-system, sans-serif;
+
+	--color-primary: #2d3e70;
+	--color-primary-hover: #3b4f8c;
+	--color-primary-active: #1f2b4e;
+	--color-primary-light: #e6e9f2;
+
+	--color-accent: #c1ff72;
+	--color-accent-hover: #adf055;
+	--color-accent-active: #99db3f;
+	--color-accent-light: #eeffd9;
+
+	--color-white: #ffffff;
+	--color-black: #000000;
+
+	--color-gray-50: #f9fafb;
+	--color-gray-100: #f3f4f6;
+	--color-gray-200: #e5e7eb;
+	--color-gray-300: #d1d5db;
+	--color-gray-400: #9ca3af;
+	--color-gray-500: #6b7280;
+	--color-gray-600: #4b5563;
+	--color-gray-700: #374151;
+	--color-gray-800: #1f2937;
+	--color-gray-900: #111827;
+
+	--color-danger: #ef4444;
+	--color-danger-hover: #dc2626;
+	--color-success: #22c55e;
+	--color-success-hover: #16a34a;
+
+	--color-focus-ring: rgba(45, 62, 112, 0.45);
+
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-full: 9999px;
+}
+
+body {
+	font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-display);
+}

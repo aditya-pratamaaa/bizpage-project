@@ -5,6 +5,62 @@ app_description = "Bizpage"
 app_email = "bizpage@gmail.com"
 app_license = "mit"
 
+# bizpage/permissions.py
+#
+# Fungsi ini didaftarkan di hooks.py, bikin Frappe OTOMATIS nambahin
+# filter "WHERE business = <business milik user ini>" ke SETIAP query
+# get_list/report_view untuk Product, Portfolio, Custom Request dll.
+# Jadi walaupun frontend nakal ngirim business_id lain, backend tetap
+# cuma ngasih data yang emang milik user itu.
+
+import frappe
+
+
+def get_business_for_user(user):
+	"""Ambil business_id milik user yang login. Sesuaikan field/doctype-nya."""
+	return frappe.db.get_value("Business", {"owner": user}, "name")
+
+
+def product_query_conditions(user):
+	if not user:
+		user = frappe.session.user
+
+	# Admin boleh lihat semua produk semua bisnis
+	if "Admin" in frappe.get_roles(user):
+		return ""
+
+	business = get_business_for_user(user)
+	if not business:
+		# User login tapi belum punya business -> jangan tampilkan apa-apa
+		return "1=0"
+
+	return f"`tabProduct`.`business` = {frappe.db.escape(business)}"
+
+
+def portfolio_query_conditions(user):
+	if not user:
+		user = frappe.session.user
+
+	if "Admin" in frappe.get_roles(user):
+		return ""
+
+	business = get_business_for_user(user)
+	if not business:
+		return "1=0"
+
+	return f"`tabPortfolio`.`business` = {frappe.db.escape(business)}"
+
+
+# Contoh has_permission tambahan (buat cek pas akses 1 dokumen spesifik,
+# bukan cuma list) -> mencegah orang akses /api/resource/Product/xxx
+# punya bisnis lain langsung lewat ID.
+def product_has_permission(doc, ptype, user):
+	if "Admin" in frappe.get_roles(user):
+		return True
+
+	business = get_business_for_user(user)
+	return doc.business == business
+
 # Apps
 # ------------------
 
