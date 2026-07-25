@@ -2,12 +2,9 @@ import { createApp } from "vue";
 import { FrappeUI, setConfig, frappeRequest, resourcesPlugin } from "frappe-ui";
 import App from "./App.vue";
 import router from "./routes.js";
-import PrimeVue from "primevue/config";
-
+import "@mdi/font/css/materialdesignicons.css";
 import "@vueform/multiselect/themes/default.css";
 import "@vueform/slider/themes/default.css";
-
-import "primeicons/primeicons.css";
 
 import "./style.css";
 

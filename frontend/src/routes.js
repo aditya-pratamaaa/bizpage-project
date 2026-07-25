@@ -36,6 +36,12 @@ const routes = [
 		component: () => import("./views/pages/dashboard/dashboard-page.vue"),
 		meta: { requiresAuth: true, roles: ["owner"], title: "Dashboard" },
 	},
+	{
+		path: "/products",
+		name: "Products",
+		component: () => import("./views/pages/owner/products/product/products-list.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Produk" },
+	},
 	// {
 	// 	path: "/dashboard/products",
 	// 	name: "Products",
