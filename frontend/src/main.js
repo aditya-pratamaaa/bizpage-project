@@ -2,7 +2,7 @@ import { createApp } from "vue";
 import { FrappeUI, setConfig, frappeRequest, resourcesPlugin } from "frappe-ui";
 import App from "./App.vue";
 import router from "./routes.js";
-
+import "@mdi/font/css/materialdesignicons.css";
 import "@vueform/multiselect/themes/default.css";
 import "@vueform/slider/themes/default.css";
 
