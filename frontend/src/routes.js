@@ -21,7 +21,14 @@ const routes = [
 		component: () => import("./views/auth/register-page.vue"),
 		meta: { title: "Daftar Akun", guestOnly: true },
 	},
+	{
+		path: "/forgot-password",
+		name: "Forgot Password",
+		component: () => import("./views/auth/forgot-password.vue"),
+		meta: { title: "Lupa Password", guestOnly: true },
+	},
 	// {
+
 	// 	// Katalog publik: katalogin.id/:username
 	// 	path: "/:username",
 	// 	name: "PublicCatalog",
@@ -30,6 +37,18 @@ const routes = [
 	// },
 
 	// ---------- OWNER (wajib login, role: owner) ----------
+	{
+		path: "/profile",
+		name: "Profile",
+		component: () => import("./views/pages/dashboard/profile-page.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Profile" },
+	},
+	{
+		path: "/settings",
+		name: "Settings",
+		component: () => import("./views/pages/dashboard/setting-page.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Settings" },
+	},
 	{
 		path: "/dashboard",
 		name: "Dashboard",
@@ -41,6 +60,12 @@ const routes = [
 		name: "Products",
 		component: () => import("./views/pages/owner/products/product/products-list.vue"),
 		meta: { requiresAuth: true, roles: ["owner"], title: "Produk" },
+	},
+	{
+		path: "/items",
+		name: "Item",
+		component: () => import("./views/pages/owner/products/component/components-list.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Item" },
 	},
 	// {
 	// 	path: "/dashboard/products",

@@ -33,6 +33,19 @@ session.userRole = createResource({
 	cache: "userRole",
 });
 
+session.currentUser = computed(() => ({
+	id: session.user,
+	name: session.userRole.data?.full_name || session.user || "",
+	avatar: session.userRole.data?.avatar || defaultAvatar(session.userRole.data?.full_name),
+	role: session.userRole.data?.role || null,
+}));
+
+// fallback avatar kalau user_image kosong — generate dari inisial nama
+function defaultAvatar(name) {
+	const label = encodeURIComponent(name || "U");
+	return `https://ui-avatars.com/api/?name=${label}&background=2d3e70&color=fff`;
+}
+
 // Helper: pastikan role sudah ke-fetch, dipakai di authGuard.
 export async function ensureUserRole() {
 	if (!session.isLoggedIn) return null;

@@ -103,7 +103,12 @@
 				</div>
 
 				<div class="field">
-					<label class="field-label" for="password">Password</label>
+					<div class="field-label-row">
+						<label class="field-label" for="password">Password</label>
+						<router-link to="/forgot-password" class="forgot-link">
+							Lupa Password?
+						</router-link>
+					</div>
 					<input
 						id="password"
 						type="password"
@@ -319,10 +324,28 @@ function submit() {
 	gap: 0.375rem;
 }
 
+.field-label-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
 .field-label {
 	font-size: 0.8125rem;
 	font-weight: 500;
 	color: var(--color-gray-700);
+}
+
+.forgot-link {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--color-primary);
+	text-decoration: none;
+}
+
+.forgot-link:hover {
+	text-decoration: underline;
 }
 
 .field-input {

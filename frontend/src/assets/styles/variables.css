@@ -39,6 +39,17 @@
 	--radius-full: 9999px;
 }
 
+.dark {
+	--color-primary: #6f86c9;
+	--color-primary-hover: #8296d4;
+	--color-primary-active: #5a70b3;
+	--color-primary-light: #23305a;
+
+	--color-accent-light: #2b3a1a;
+
+	--color-focus-ring: rgba(111, 134, 201, 0.45);
+}
+
 body {
 	font-family: var(--font-body);
 }

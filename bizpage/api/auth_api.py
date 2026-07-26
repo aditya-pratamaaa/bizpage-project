@@ -111,11 +111,6 @@ def resend_verification(email):
 
 @frappe.whitelist()
 def get_user_role():
-	"""
-	Dipanggil dari frontend (session.userRole di session.js).
-	Role ditentukan dari Role Profile milik user (field
-	role_profile_name di User doctype), bukan dari Role satuan.
-	"""
 	user = frappe.session.user
 
 	if user == "Guest":
@@ -123,10 +118,15 @@ def get_user_role():
 
 	role_profile = frappe.db.get_value("User", user, "role_profile_name")
 
-	if role_profile == "Admin":
-		return {"role": "admin"}
+	if role_profile not in ("Admin", "Owner"):
+		frappe.throw("User belum punya Role Profile yang valid", frappe.PermissionError)
 
-	if role_profile == "Owner":
-		return {"role": "owner"}
+	user_doc = frappe.db.get_value(
+		"User", user, ["full_name", "user_image"], as_dict=True
+	)
 
-	frappe.throw("User belum punya Role Profile yang valid", frappe.PermissionError)
+	return {
+		"role": "admin" if role_profile == "Admin" else "owner",
+		"full_name": user_doc.full_name,
+		"avatar": user_doc.user_image,
+	}
