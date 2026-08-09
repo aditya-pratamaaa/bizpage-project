@@ -27,6 +27,30 @@ const routes = [
 		component: () => import("./views/auth/forgot-password.vue"),
 		meta: { title: "Lupa Password", guestOnly: true },
 	},
+	{
+		path: "/:business",
+		name: "StoreProfile",
+		component: () => import("./views/pages/public/store-profile.vue"),
+		meta: { title: "Profile Toko" },
+	},
+	{
+		path: "/:store/:slug",
+		name: "ProductDetail",
+		component: () => import("./views/pages/public/product-detail.vue"),
+		meta: { title: "Detail Produk", guestOnly: true },
+	},
+	{
+		path: "/closed",
+		name: "Closed",
+		component: () => import("./views/pages/public/closed_page.vue"),
+		meta: { title: "Toko Tutup", guestOnly: true },
+	},
+	{
+		path: "/not-found",
+		name: "Not Found",
+		component: () => import("./views/pages/public/not_found_page.vue"),
+		meta: { title: "Toko Tidak Ditemukan", guestOnly: true },
+	},
 	// {
 
 	// 	// Katalog publik: katalogin.id/:username
