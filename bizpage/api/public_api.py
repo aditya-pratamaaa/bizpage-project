@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import nowdate
 
 @frappe.whitelist(allow_guest=True)
 def get_store_profile(slug):
@@ -83,6 +84,8 @@ def get_items(slug, recomended=None, item_group=None):
             "business",
             "recomended",
             "slug",
+			"cod",
+    "delivery",
         ],
     )
 
@@ -102,8 +105,21 @@ def get_items(slug, recomended=None, item_group=None):
         for p in prices
     }
 
+    group_ids = list(set([i["item_group"] for i in items if i.get("item_group")]))
+    group_map = {}
+    if group_ids:
+        groups = frappe.get_all(
+            "Item Group",
+            filters={"name": ["in", group_ids]},
+            fields=["name", "item_group_name", "slug"],
+        )
+        group_map = {g["name"]: g for g in groups}
+
     for item in items:
         item["price"] = price_map.get(item["name"])
+        group = group_map.get(item.get("item_group"))
+        item["item_group_name"] = group["item_group_name"] if group else None
+        item["item_group_slug"] = group["slug"] if group and group.get("slug") else None
 
     return items
 
@@ -142,7 +158,7 @@ def get_item_detail(slug):
         filters={"slug": slug},
         fields=[
             "name", "item_name", "item_group", "slug",
-            "image", "description", "business", "recomended"
+            "image", "description", "business", "recomended", "delivery", "cod"
         ],
         limit=1
     )
@@ -152,16 +168,15 @@ def get_item_detail(slug):
 
     item = items[0]
 
-    # Price
     item["price"] = frappe.db.get_value("Price", {"item_name": item.name}, "price")
 
-    # Item Group label
     if item.item_group:
-        item["item_group_name"] = frappe.db.get_value(
-            "Item Group", item.item_group, "item_group_name"
+        group = frappe.db.get_value(
+            "Item Group", item.item_group, ["item_group_name", "slug"], as_dict=True
         )
+        item["item_group_name"] = group.item_group_name if group else None
+        item["item_group_slug"] = group.slug if group and group.slug else None
 
-    # Business + phone_number
     item["business"] = frappe.db.get_value(
         "Business",
         item.business,
@@ -169,10 +184,9 @@ def get_item_detail(slug):
         as_dict=True
     )
 
-    # Images: gambar utama di index 0, lalu child table "Item Image"
     images = []
     if item.image:
-        images.append(item.image)
+        images.append({"image": item.image, "title": item.item_name})
 
     child_image_links = frappe.get_all(
         "Item Image Link",
@@ -183,31 +197,20 @@ def get_item_detail(slug):
 
     for row in child_image_links:
         if row.item_image:
-            img_file = frappe.db.get_value("Item Image", row.item_image, "image")
-            if img_file:
-                images.append(img_file)
+            img_detail = frappe.db.get_value(
+                "Item Image",
+                row.item_image,
+                ["image", "title"],
+                as_dict=True
+            )
+            if img_detail and img_detail.image:
+                images.append({
+                    "image": img_detail.image,
+                    "title": img_detail.title or item.item_name
+                })
 
     item["images"] = images
 
-    # Attributes: kelompokkan per nama atribut -> list of values
-    child_attributes = frappe.get_all(
-        "Item Attribute",
-        filters={"parent": item.name, "parenttype": "Item"},
-        fields=["attribute", "attribute_value"],
-        order_by="idx asc"
-    )
-
-    attributes = {}
-    for row in child_attributes:
-        if not row.attribute or not row.attribute_value:
-            continue
-        attributes.setdefault(row.attribute, [])
-        if row.attribute_value not in attributes[row.attribute]:
-            attributes[row.attribute].append(row.attribute_value)
-
-    item["attributes"] = attributes
-
-    # Components: Isi Paket
     child_components = frappe.get_all(
         "Item Component",
         filters={"parent": item.name, "parenttype": "Item"},
@@ -219,5 +222,149 @@ def get_item_detail(slug):
         if c.component:
             c["component_name"] = frappe.db.get_value("Component", c.component, "component_name")
 
-    item["components"] = child_components
+    child_variants = frappe.get_all(
+        "Item Variant",
+        filters={"parent": item.name, "parenttype": "Item"},
+        fields=["attribute", "value", "price_adjustment"],
+        order_by="idx asc"
+    )
+
+    for v in child_variants:
+
+        attr_label = frappe.db.get_value("Item Attribute", v.attribute, "attribute_name") or frappe.db.get_value("Item Attribute", v.attribute, "name")
+        v["attribute_label"] = attr_label if attr_label else v.attribute
+
+        val_label = frappe.db.get_value("Item Attribute Value", v.value, "value") or frappe.db.get_value("Item Attribute Value", v.value, "name")
+        v["value_label"] = val_label if val_label else v.value
+
+        v["price_adjustment"] = float(v.price_adjustment) if v.price_adjustment else 0
+
+    item["variants"] = child_variants
+
     return item
+
+@frappe.whitelist(allow_guest=True)
+def get_discounted_items(slug):
+    business_id = frappe.db.get_value("Business", {"slug": slug}, "name")
+    if not business_id:
+        return []
+
+    today = nowdate()
+
+    active_discounts = frappe.get_all(
+        "Discount",
+        filters={
+            "business": business_id,
+            "start_date": ["<=", today],
+            "end_date": [">=", today],
+        },
+        fields=["name", "discount_name", "amount"],
+    )
+
+    if not active_discounts:
+        return []
+
+    discount_names = [d["name"] for d in active_discounts]
+
+    discount_items = frappe.get_all(
+        "Item Discount",
+        filters={"parent": ["in", discount_names]},
+        fields=["item", "parent"],
+    )
+
+    if not discount_items:
+        return []
+
+    discount_map = {}
+    parent_amount_map = {d["name"]: d for d in active_discounts}
+    for row in discount_items:
+        if row.item:
+            discount_map[row.item] = parent_amount_map.get(row.parent)
+
+    item_ids = list(discount_map.keys())
+
+    items = frappe.get_all(
+        "Item",
+        filters={
+            "name": ["in", item_ids],
+            "business": business_id,
+        },
+        fields=[
+            "name", "item_name", "item_group", "image",
+            "description", "business", "recomended", "slug","cod",
+    "delivery",
+        ],
+    )
+
+    if not items:
+        return []
+
+    item_docnames = [i["name"] for i in items]
+
+    prices = frappe.get_all(
+        "Price",
+        filters={"item_name": ["in", item_docnames]},
+        fields=["item_name", "price"],
+    )
+    price_map = {p["item_name"]: p["price"] for p in prices}
+
+    group_ids = list(set([i["item_group"] for i in items if i.get("item_group")]))
+    group_map = {}
+    if group_ids:
+        groups = frappe.get_all(
+            "Item Group",
+            filters={"name": ["in", group_ids]},
+            fields=["name", "item_group_name", "slug"],
+        )
+        group_map = {g["name"]: g for g in groups}
+
+    for item in items:
+        base_price = price_map.get(item["name"]) or 0
+        item["price"] = base_price
+
+        group = group_map.get(item.get("item_group"))
+        item["item_group_name"] = group["item_group_name"] if group else None
+        item["item_group_slug"] = group["slug"] if group and group.get("slug") else None
+
+        discount_info = discount_map.get(item["name"])
+        if discount_info and base_price:
+            discount_amount = float(discount_info["amount"] or 0)
+            item["discount_percent"] = discount_amount
+            item["discounted_price"] = round(base_price - (base_price * discount_amount / 100))
+        else:
+            item["discount_percent"] = 0
+            item["discounted_price"] = base_price
+
+    return items
+
+@frappe.whitelist(allow_guest=True)
+def track_item_click(slug):
+    item_name = frappe.db.get_value("Item", {"slug": slug}, "name")
+
+    if item_name:
+        frappe.db.sql("""
+            UPDATE `tabItem`
+            SET `click` = IFNULL(`click`, 0) + 1
+            WHERE `name` = %s
+        """, (item_name,))
+        frappe.db.commit()
+        return True
+
+    return False
+
+@frappe.whitelist(allow_guest=True)
+def create_sales_order(item, business, customer, custom_note=None):
+    if not item or not business or not customer:
+        frappe.throw("Data tidak lengkap untuk membuat pesanan.")
+
+    so = frappe.new_doc("Sales Order")
+    so.business = business
+    so.item = item
+    so.customer = customer
+    so.custom_note = custom_note or ""
+    so.order_date = nowdate()
+    so.status = "Order Placed"
+    so.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {"name": so.name}
