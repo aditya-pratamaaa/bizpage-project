@@ -255,9 +255,19 @@
 					@click="goToProduct(i)"
 					class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden bizpage-card-item"
 				>
+					<!-- Tambahkan class 'relative' di div ini untuk label diskon -->
 					<div
-						class="w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
+						class="relative w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
 					>
+						<!-- === LABEL DISKON MELAYANG === -->
+						<div
+							v-if="i.discount_percent > 0"
+							class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider"
+						>
+							Diskon {{ i.discount_percent }}%
+						</div>
+						<!-- ============================= -->
+
 						<img
 							v-if="i.image"
 							:src="`${apiUrl}${i.image}`"
@@ -266,6 +276,7 @@
 						/>
 						<div v-else class="text-sm">No Image</div>
 					</div>
+
 					<div
 						class="w-full h-[7rem] flex flex-col justify-between p-[0.6rem] bizpage-card-item__info"
 					>
@@ -275,9 +286,32 @@
 							>
 								{{ i.item_name }}
 							</h1>
-							<h2 class="text-lg font-bold bizpage-card-item__price">
+
+							<!-- === HARGA DISKON & CORET === -->
+							<div v-if="i.discount_percent > 0" class="flex flex-col mt-0.5">
+								<span class="text-[11px] text-gray-400 line-through leading-none">
+									Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+								</span>
+								<h2
+									class="text-lg font-bold text-red-600 bizpage-card-item__price leading-tight"
+								>
+									Rp.
+									{{
+										i.discounted_price
+											? i.discounted_price.toLocaleString("id-ID")
+											: "-"
+									}}
+								</h2>
+							</div>
+
+							<!-- Harga Normal (jika tidak ada diskon) -->
+							<h2
+								v-else
+								class="text-lg font-bold mt-0.5 bizpage-card-item__price leading-tight"
+							>
 								Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
 							</h2>
+							<!-- ============================ -->
 
 							<div class="flex items-center gap-1.5 mt-1.5">
 								<div

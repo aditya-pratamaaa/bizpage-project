@@ -168,7 +168,48 @@ def get_item_detail(slug):
 
     item = items[0]
 
-    item["price"] = frappe.db.get_value("Price", {"item_name": item.name}, "price")
+    # --- AMBIL HARGA DASAR ---
+    base_price = frappe.db.get_value("Price", {"item_name": item.name}, "price") or 0
+    item["price"] = base_price
+
+    # === TAMBAHAN KODE UNTUK DISKON ===
+    item["discount_percent"] = 0
+    item["discounted_price"] = base_price
+
+    today = nowdate()
+    # Cari apakah ada diskon aktif di toko ini
+    active_discounts = frappe.get_all(
+        "Discount",
+        filters={
+            "business": item.business,
+            "start_date": ["<=", today],
+            "end_date": [">=", today],
+        },
+        fields=["name", "amount"]
+    )
+
+    if active_discounts:
+        discount_names = [d["name"] for d in active_discounts]
+        # Cek apakah item ini masuk ke dalam daftar item diskon
+        discount_item = frappe.get_all(
+            "Item Discount",
+            filters={
+                "parent": ["in", discount_names],
+                "item": item.name
+            },
+            fields=["parent"],
+            limit=1
+        )
+
+        if discount_item:
+            parent_discount = discount_item[0].parent
+            for d in active_discounts:
+                if d["name"] == parent_discount:
+                    discount_amount = float(d["amount"] or 0)
+                    item["discount_percent"] = discount_amount
+                    item["discounted_price"] = round(base_price - (base_price * discount_amount / 100))
+                    break
+    # ==================================
 
     if item.item_group:
         group = frappe.db.get_value(
@@ -230,7 +271,6 @@ def get_item_detail(slug):
     )
 
     for v in child_variants:
-
         attr_label = frappe.db.get_value("Item Attribute", v.attribute, "attribute_name") or frappe.db.get_value("Item Attribute", v.attribute, "name")
         v["attribute_label"] = attr_label if attr_label else v.attribute
 

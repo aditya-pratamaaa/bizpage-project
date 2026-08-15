@@ -143,9 +143,23 @@
 					{{ product.data.item_name }}
 				</h1>
 
-				<h2 class="mt-2 text-xl sm:text-2xl font-bold bizpage-price">
-					Rp {{ activePrice ? activePrice.toLocaleString("id-ID") : "-" }}
-				</h2>
+				<div class="mt-2 flex flex-col">
+					<!-- Tampilkan harga coret HANYA jika ada diskon -->
+					<span
+						v-if="product.data.discount_percent > 0"
+						class="text-sm text-gray-400 line-through"
+					>
+						Rp {{ originalPrice ? originalPrice.toLocaleString("id-ID") : "-" }}
+					</span>
+
+					<!-- Harga Akhir (Diskon / Normal) -->
+					<h2
+						class="text-xl sm:text-2xl font-bold bizpage-price"
+						:class="product.data.discount_percent > 0 ? 'text-red-600' : ''"
+					>
+						Rp {{ activePrice ? activePrice.toLocaleString("id-ID") : "-" }}
+					</h2>
+				</div>
 
 				<div class="flex items-center gap-2 mt-3 mb-1">
 					<div
@@ -404,12 +418,19 @@ const groupedVariants = computed(() => {
 });
 
 const activePrice = computed(() => {
-	const basePrice = Number(product.data?.price || 0);
-
+	const basePrice = Number(product.data?.discounted_price || product.data?.price || 0);
 	if (selectedVariant.value && selectedVariant.value.price_adjustment) {
 		return basePrice + Number(selectedVariant.value.price_adjustment);
 	}
+	return basePrice;
+});
 
+// Harga Asli (Coret) = Harga Dasar Normal + Price Adjustment Varian
+const originalPrice = computed(() => {
+	const basePrice = Number(product.data?.price || 0);
+	if (selectedVariant.value && selectedVariant.value.price_adjustment) {
+		return basePrice + Number(selectedVariant.value.price_adjustment);
+	}
 	return basePrice;
 });
 
