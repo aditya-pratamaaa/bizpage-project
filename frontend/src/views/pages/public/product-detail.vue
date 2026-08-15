@@ -1,20 +1,23 @@
 <template>
-	<div v-if="product.loading" class="flex items-center justify-center h-screen text-gray-500">
+	<div
+		v-if="product.loading"
+		class="flex items-center justify-center h-screen bizpage-text-muted"
+	>
 		Memuat produk...
 	</div>
 	<div
 		v-else-if="!product.data"
 		class="flex flex-col items-center justify-center h-screen gap-4"
 	>
-		<p class="text-gray-500">Produk tidak ditemukan.</p>
-		<button @click="router.back()" class="text-[var(--button-bg)] font-medium">
+		<p class="bizpage-text-muted">Produk tidak ditemukan.</p>
+		<button @click="router.back()" class="font-medium cursor-pointer bizpage-text-accent">
 			← Kembali
 		</button>
 	</div>
 	<div v-else class="m-6 sm:m-8 md:m-10">
 		<button
 			@click="router.back()"
-			class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 cursor-pointer"
+			class="flex items-center gap-1 text-sm mb-6 cursor-pointer transition-colors bizpage-back-link"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -33,35 +36,38 @@
 			Kembali
 		</button>
 
-		<div class="flex flex-col md:flex-row gap-8">
-			<!-- Image Slider -->
-			<div class="w-full md:w-1/2">
+		<div class="flex flex-col md:flex-row md:items-stretch gap-8">
+			<div class="w-full md:w-[620px] md:sticky md:top-6 md:self-start">
 				<div
 					@touchstart="handleTouchStart"
 					@touchend="handleTouchEnd"
-					class="relative w-full aspect-square bg-gray-100 rounded-[1rem] overflow-hidden group select-none"
+					class="relative w-full aspect-square rounded-[1rem] overflow-hidden group select-none bizpage-gallery-media"
 				>
 					<template v-if="images.length > 0">
 						<transition :name="slideDirection">
 							<img
 								:key="currentIndex"
-								:src="`${apiUrl}${images[currentIndex]}`"
-								:alt="product.data.item_name"
+								:src="`${apiUrl}${images[currentIndex].image}`"
+								:alt="images[currentIndex].title || product.data.item_name"
 								class="absolute inset-0 w-full h-full object-cover pointer-events-none"
 							/>
 						</transition>
 					</template>
-					<div
-						v-else
-						class="w-full h-full flex items-center justify-center text-gray-400 text-sm"
-					>
+					<div v-else class="w-full h-full flex items-center justify-center text-sm">
 						No Image
+					</div>
+
+					<div
+						v-if="images.length > 1"
+						class="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full text-xs font-medium bizpage-image-counter"
+					>
+						{{ currentIndex + 1 }}/{{ images.length }}
 					</div>
 
 					<button
 						v-if="images.length > 1"
 						@click="slideLeft"
-						class="absolute z-10 left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/70 hover:bg-white text-gray-800 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex"
+						class="absolute z-10 left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex bizpage-slider-btn"
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -82,7 +88,7 @@
 					<button
 						v-if="images.length > 1"
 						@click="slideRight"
-						class="absolute z-10 right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/70 hover:bg-white text-gray-800 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex"
+						class="absolute z-10 right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex bizpage-slider-btn"
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -100,75 +106,81 @@
 						</svg>
 					</button>
 				</div>
-
-				<!-- Dots indicator -->
-				<div v-if="images.length > 1" class="flex justify-center gap-1.5 mt-3">
+				<div v-if="images.length > 1" class="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
 					<button
 						v-for="(img, idx) in images"
 						:key="idx"
 						@click="goToSlide(idx)"
 						:class="[
-							'h-1.5 rounded-full transition-all cursor-pointer',
-							idx === currentIndex
-								? 'w-5 bg-[var(--button-bg)]'
-								: 'w-1.5 bg-gray-300',
+							'shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-[0.5rem] overflow-hidden border-2 transition-colors cursor-pointer bizpage-gallery-thumb',
+							idx === currentIndex ? 'is-active' : '',
 						]"
-					/>
+					>
+						<img
+							:src="`${apiUrl}${img.image}`"
+							:alt="img.title || product.data.item_name"
+							class="w-full h-full object-cover"
+						/>
+					</button>
 				</div>
-			</div>
 
-			<!-- Info -->
-			<div class="w-full md:w-1/2 flex flex-col">
+				<p
+					v-if="images.length > 0 && images[currentIndex].title"
+					class="mt-2 text-sm text-center bizpage-text-muted"
+				>
+					{{ images[currentIndex].title }}
+				</p>
+			</div>
+			<div class="w-full md:flex-1 min-w-0 flex flex-col">
 				<span
 					v-if="product.data.item_group_name"
-					class="inline-block w-fit text-xs font-medium text-[var(--button-bg)] bg-[var(--button-bg)]/10 px-2.5 py-0.5 rounded-full mb-2"
+					class="inline-block w-fit text-sm font-medium px-2.5 py-0.5 rounded-full mb-2 bizpage-badge-accent"
 				>
 					{{ product.data.item_group_name }}
 				</span>
 
-				<h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
+				<h1 class="text-2xl sm:text-3xl font-bold bizpage-text-heading">
 					{{ product.data.item_name }}
 				</h1>
 
-				<h2 class="mt-2 text-xl sm:text-2xl font-bold text-[var(--button-bg)]">
-					Rp {{ product.data.price ? product.data.price.toLocaleString("id-ID") : "-" }}
+				<h2 class="mt-2 text-xl sm:text-2xl font-bold bizpage-price">
+					Rp {{ activePrice ? activePrice.toLocaleString("id-ID") : "-" }}
 				</h2>
 
+				<div class="flex items-center gap-2 mt-3 mb-1">
+					<div
+						v-if="product.data.cod"
+						class="flex items-center gap-1.5 px-2.5 py-1 rounded-[0.25rem] bg-orange-100 text-orange-600 border border-orange-200"
+					>
+						<img src="../../../assets/icon/cod.svg" alt="COD" class="w-4 h-4" />
+						<span class="text-xs font-bold uppercase tracking-wide">Bisa COD</span>
+					</div>
+
+					<div
+						v-if="product.data.delivery"
+						class="flex items-center gap-1.5 px-2.5 py-1 rounded-[0.25rem] bg-blue-100 text-blue-600 border border-blue-200"
+					>
+						<img
+							src="../../../assets/icon/delivery.svg"
+							alt="Delivery"
+							class="w-4 h-4"
+						/>
+						<span class="text-xs font-bold uppercase tracking-wide">Delivery</span>
+					</div>
+				</div>
+
 				<p
-					class="mt-4 text-sm sm:text-[15px] text-gray-600 leading-relaxed whitespace-pre-line"
+					class="mt-4 text-sm sm:text-[15px] leading-relaxed whitespace-pre-line bizpage-text-muted"
 				>
 					{{ product.data.description || "Tidak ada deskripsi." }}
 				</p>
 
-				<!-- Pilih Varian -->
-				<div v-if="Object.keys(attributes).length > 0" class="mt-6 flex flex-col gap-4">
-					<div v-for="(values, attrName) in attributes" :key="attrName">
-						<p class="text-sm font-semibold text-gray-800 mb-2">{{ attrName }}</p>
-						<div class="flex flex-wrap gap-2">
-							<button
-								v-for="val in values"
-								:key="val"
-								@click="selectVariant(attrName, val)"
-								:class="[
-									'px-4 py-2 text-sm rounded-[0.5rem] border cursor-pointer transition-colors',
-									selectedVariants[attrName] === val
-										? 'bg-[var(--button-bg)] border-[var(--button-bg)] text-white'
-										: 'bg-white border-gray-300 text-gray-700 hover:border-gray-400',
-								]"
-							>
-								{{ val }}
-							</button>
-						</div>
-					</div>
-				</div>
-
-				<!-- Isi Paket -->
 				<div
 					v-if="product.data.components && product.data.components.length > 0"
-					class="mt-6"
+					class="mt-6 pt-6 border-t border-[var(--border-subtle)]"
 				>
-					<p class="text-sm font-semibold text-gray-800 mb-2">Isi Paket</p>
-					<ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+					<p class="text-base font-semibold mb-2 bizpage-text-heading">Isi Paket</p>
+					<ul class="list-disc list-inside text-sm space-y-1 bizpage-text-muted">
 						<li v-for="(c, idx) in product.data.components" :key="idx">
 							{{ c.component_name || c.component }}
 							<span v-if="c.qty"> x{{ c.qty }}</span>
@@ -176,77 +188,161 @@
 					</ul>
 				</div>
 
-				<!-- Business info -->
+				<div
+					v-if="Object.keys(groupedVariants).length > 0"
+					class="mt-6 pt-6 border-t border-[var(--border-subtle)] flex flex-col gap-4"
+				>
+					<div v-for="(variants, attrName) in groupedVariants" :key="attrName">
+						<p class="text-base font-semibold mb-2 bizpage-text-heading">
+							{{ attrName }}
+						</p>
+						<div class="flex flex-wrap gap-2">
+							<button
+								v-for="(v, idx) in variants"
+								:key="idx"
+								@click="selectedVariant = v"
+								:class="[
+									'px-4 py-2 text-sm rounded-[0.25rem] border transition-colors cursor-pointer bizpage-variant-chip',
+									selectedVariant === v ? 'is-active font-semibold' : '',
+								]"
+							>
+								{{ v.value_label }}
+							</button>
+						</div>
+					</div>
+				</div>
+
 				<div
 					v-if="product.data.business"
 					@click="goToStore(product.data.business.slug)"
-					class="mt-6 flex items-center gap-3 p-3 border border-gray-200 rounded-[0.75rem] cursor-pointer hover:border-gray-300 transition-colors w-fit"
+					class="mt-6 flex items-center gap-3 p-3 border rounded-[0.75rem] cursor-pointer transition-colors w-fit bizpage-info-card"
 				>
 					<img
 						v-if="product.data.business.image"
 						:src="`${apiUrl}${product.data.business.image}`"
 						alt="Logo"
-						class="h-10 w-10 rounded-full object-cover bg-gray-100"
+						class="h-10 w-10 rounded-full object-cover bg-[var(--bg-subtle)]"
 					/>
 					<div>
-						<p class="text-xs text-gray-400">Dijual oleh</p>
-						<p class="text-sm font-semibold text-gray-800">
+						<p class="text-sm bizpage-text-muted">Dijual oleh</p>
+						<p class="text-base font-semibold bizpage-text-heading">
 							{{ product.data.business.business_name }}
 						</p>
 					</div>
 				</div>
 
-				<button
-					@click="handleCheckout"
-					class="mt-8 w-full sm:w-fit px-6 py-3 rounded-[0.75rem] bg-green-600 text-white font-medium hover:bg-green-700 transition-colors cursor-pointer flex items-center justify-center gap-2"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-						class="w-5 h-5"
+				<div class="mt-8 pt-6 border-t border-[var(--border-subtle)] w-full sm:w-fit">
+					<button
+						@click="handleCheckout"
+						class="w-full px-6 py-3 rounded-[0.25rem] font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm bizpage-btn-whatsapp"
 					>
-						<path
-							d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.07-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.18-1.76 1.24-.45.06-1.02.08-1.65-.1-.38-.11-.87-.28-1.5-.55-2.64-1.14-4.36-3.8-4.5-3.98-.13-.18-1.08-1.44-1.08-2.74 0-1.3.68-1.94.92-2.2.24-.26.53-.32.7-.32.18 0 .35 0 .5.01.16.01.38-.06.6.46.22.53.75 1.83.82 1.96.07.13.11.29.02.47-.09.18-.13.29-.26.44-.13.15-.27.34-.39.46-.13.13-.26.27-.11.53.15.26.65 1.08 1.4 1.75.97.86 1.78 1.13 2.05 1.26.26.13.42.11.57-.07.15-.18.65-.76.82-1.02.17-.26.35-.22.58-.13.24.09 1.5.71 1.76.84.26.13.43.19.5.3.07.11.07.62-.15 1.24z"
-						/>
-					</svg>
-					Pesan via WhatsApp
-				</button>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							class="w-5 h-5"
+						>
+							<path
+								d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.07-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.18-1.76 1.24-.45.06-1.02.08-1.65-.1-.38-.11-.87-.28-1.5-.55-2.64-1.14-4.36-3.8-4.5-3.98-.13-.18-1.08-1.44-1.08-2.74 0-1.3.68-1.94.92-2.2.24-.26.53-.32.7-.32.18 0 .35 0 .5.01.16.01.38-.06.6.46.22.53.75 1.83.82 1.96.07.13.11.29.02.47-.09.18-.13.29-.26.44-.13.15-.27.34-.39.46-.13.13-.26.27-.11.53.15.26.65 1.08 1.4 1.75.97.86 1.78 1.13 2.05 1.26.26.13.42.11.57-.07.15-.18.65-.76.82-1.02.17-.26.35-.22.58-.13.24.09 1.5.71 1.76.84.26.13.43.19.5.3.07.11.07.62-.15 1.24z"
+							/>
+						</svg>
+						Pesan via WhatsApp
+					</button>
+				</div>
+			</div>
+
+			<div
+				class="w-full md:w-80 shrink-0 flex flex-col border rounded-[0.75rem] bizpage-info-card overflow-hidden"
+			>
+				<div class="p-4">
+					<p class="text-sm font-semibold bizpage-text-heading">Request Khusus</p>
+					<p class="mt-1 text-xs leading-relaxed bizpage-text-muted">
+						Ingin request khusus untuk pesanan Anda?
+					</p>
+				</div>
+
+				<div
+					class="px-4 py-3 border-t border-[var(--border-subtle)] flex items-center gap-3"
+				>
+					<img
+						v-if="images.length > 0"
+						:src="`${apiUrl}${images[0].image}`"
+						:alt="product.data.item_name"
+						class="h-10 w-10 rounded-[0.375rem] object-cover shrink-0 bg-[var(--bg-subtle)]"
+					/>
+					<p class="text-sm font-medium bizpage-text-heading truncate">
+						{{ product.data.item_name }}
+					</p>
+				</div>
+
+				<div
+					class="flex-1 flex flex-col px-4 pb-4 pt-3 border-t border-[var(--border-subtle)]"
+				>
+					<label for="custom_name" class="text-xs font-medium bizpage-text-muted"
+						>Nama</label
+					>
+					<input
+						type="text"
+						id="custom_name"
+						v-model="customBuyerName"
+						placeholder="Nama Anda"
+						class="w-full mt-1 px-3 py-1.5 text-sm border rounded-[0.25rem] bizpage-input"
+					/>
+
+					<label
+						for="custom_note"
+						class="mt-3 block text-xs font-medium bizpage-text-muted"
+						>Catatan</label
+					>
+					<textarea
+						id="custom_note"
+						v-model="customNote"
+						placeholder="Contoh: mau warna kuning, request pita pink, dll"
+						class="w-full mt-1 flex-1 px-3 py-1.5 text-sm border rounded-[0.25rem] bizpage-input bizpage-textarea resize-none"
+					></textarea>
+
+					<button
+						@click="sendCustomWhatsApp"
+						class="w-full mt-3 px-6 py-2.5 rounded-[0.25rem] text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 bizpage-btn-whatsapp"
+					>
+						Kirim Request Custom
+					</button>
+				</div>
 			</div>
 		</div>
+	</div>
+	<div
+		v-if="isCheckoutFormVisible"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity bg-[var(--overlay-bg)]"
+	>
+		<div class="w-full max-w-sm rounded-[1rem] p-6 shadow-xl bg-[var(--bg-page)]">
+			<h3 class="text-xl font-bold mb-1 bizpage-text-heading">Data Pesanan</h3>
+			<p class="text-sm mb-5 bizpage-text-muted">Silakan isi nama Anda untuk melanjutkan.</p>
 
-		<!-- Related products -->
-		<div v-if="related.data && related.data.length > 0" class="mt-12">
-			<h1 class="mb-6 text-xl font-bold">Produk Lainnya</h1>
-			<div
-				class="flex flex-nowrap overflow-x-auto gap-4 pb-2 no-scrollbar snap-x snap-mandatory"
+			<label for="customer_name" class="text-base font-semibold bizpage-text-heading"
+				>Nama Lengkap</label
 			>
-				<div
-					v-for="i in related.data.filter((p) => p.name !== product.data.name)"
-					:key="i.name"
-					@click="goToProduct(i.slug)"
-					class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden shadow-md bg-white cursor-pointer"
+			<input
+				type="text"
+				id="customer_name"
+				v-model="customerName"
+				placeholder="Masukkan nama Anda..."
+				class="w-full mt-1 px-4 py-2 text-sm border rounded-[0.25rem] mb-6 bizpage-input"
+			/>
+
+			<div class="flex gap-3">
+				<button
+					@click="isCheckoutFormVisible = false"
+					class="flex-1 px-4 py-2.5 rounded-[0.25rem] border text-sm font-medium transition-colors cursor-pointer bizpage-btn-cancel"
 				>
-					<div class="w-full h-[14rem] bg-gray-100 flex items-center justify-center">
-						<img
-							v-if="i.image"
-							:src="`${apiUrl}${i.image}`"
-							:alt="i.item_name"
-							class="w-full h-full object-cover"
-						/>
-						<div v-else class="text-gray-400 text-sm">No Image</div>
-					</div>
-					<div
-						class="bg-indigo-500 w-full h-[7rem] flex flex-col justify-between p-[0.6rem]"
-					>
-						<h1 class="text-base font-bold text-white leading-tight line-clamp-1">
-							{{ i.item_name }}
-						</h1>
-						<h2 class="text-lg font-bold text-white/90">
-							Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
-						</h2>
-					</div>
-				</div>
+					Batal
+				</button>
+				<button
+					@click="sendWhatsApp"
+					class="flex-1 px-4 py-2.5 rounded-[0.25rem] text-sm font-medium transition-colors cursor-pointer bizpage-btn-whatsapp"
+				>
+					Kirim Pesan
+				</button>
 			</div>
 		</div>
 	</div>
@@ -260,8 +356,12 @@ import { ref, computed, watch } from "vue";
 const route = useRoute();
 const router = useRouter();
 const apiUrl = import.meta.env.VITE_API_URL;
+const selectedVariant = ref(null);
+const customerName = ref("");
+const isCheckoutFormVisible = ref(false);
+const customBuyerName = ref("");
+const customNote = ref("");
 
-// ---------- Product data ----------
 const product = createResource({
 	url: "bizpage.api.public_api.get_item_detail",
 	params: { slug: route.params.slug },
@@ -270,30 +370,49 @@ const product = createResource({
 		if (data) {
 			document.title = `Bizpage | ${data.item_name}`;
 			currentIndex.value = 0;
-			selectedVariants.value = {};
-			related.update({
-				params: {
-					slug: route.params.store,
-					item_group: data.item_group,
-				},
-			});
-			related.reload();
+			selectedVariant.value = null;
+			isCheckoutFormVisible.value = false;
+
+			const correctCategory = data.item_group_slug || "produk";
+			if (route.params.category !== correctCategory) {
+				router.replace({
+					name: "ProductDetail",
+					params: {
+						store: route.params.store,
+						category: correctCategory,
+						slug: route.params.slug,
+					},
+				});
+			}
 		} else {
 			router.push({ name: "Not Found" });
 		}
 	},
 });
+const images = computed(() => product.data?.images || []);
 
-const related = createResource({
-	url: "bizpage.api.public_api.get_items",
-	params: { slug: route.params.store },
-	auto: false,
+const groupedVariants = computed(() => {
+	const groups = {};
+	if (product.data?.variants) {
+		product.data.variants.forEach((v) => {
+			const attr = v.attribute_label || v.attribute;
+			if (!groups[attr]) groups[attr] = [];
+			groups[attr].push(v);
+		});
+	}
+	return groups;
 });
 
-const images = computed(() => product.data?.images || []);
-const attributes = computed(() => product.data?.attributes || {});
+const activePrice = computed(() => {
+	const basePrice = Number(product.data?.price || 0);
 
-// ---------- Image slider ----------
+	if (selectedVariant.value && selectedVariant.value.price_adjustment) {
+		return basePrice + Number(selectedVariant.value.price_adjustment);
+	}
+
+	return basePrice;
+});
+
 const currentIndex = ref(0);
 const slideDirection = ref("slide-right");
 
@@ -334,18 +453,6 @@ const handleSwipe = () => {
 	}
 };
 
-// ---------- Variant selection ----------
-const selectedVariants = ref({});
-
-const selectVariant = (attrName, value) => {
-	selectedVariants.value[attrName] = value;
-};
-
-// ---------- Navigation ----------
-const goToProduct = (slug) => {
-	router.push({ name: "ProductDetail", params: { store: route.params.store, slug } });
-};
-
 const goToStore = (storeSlug) => {
 	router.push({ name: "Store", params: { store: storeSlug } });
 };
@@ -358,27 +465,19 @@ watch(
 	},
 );
 
-// ---------- Checkout via WhatsApp ----------
 const handleCheckout = () => {
-	const attrNames = Object.keys(attributes.value);
-	const missing = attrNames.some((name) => !selectedVariants.value[name]);
-
-	if (attrNames.length > 0 && missing) {
-		alert("Mohon pilih varian produk terlebih dahulu.");
+	if (product.data.variants?.length && !selectedVariant.value) {
+		alert("Silakan pilih varian produk terlebih dahulu.");
 		return;
 	}
+	isCheckoutFormVisible.value = true;
+};
 
-	const variantText = attrNames
-		.map((name) => `${name}: ${selectedVariants.value[name]}`)
-		.join(", ");
+const createOrderResource = createResource({
+	url: "bizpage.api.public_api.create_sales_order",
+});
 
-	const itemName = product.data.item_name;
-	const price = product.data.price ? `Rp ${product.data.price.toLocaleString("id-ID")}` : "-";
-
-	const message = variantText
-		? `Halo, saya tertarik memesan ${itemName} (Varian: ${variantText}) dengan harga ${price}. Apakah stoknya masih tersedia?`
-		: `Halo, saya tertarik memesan ${itemName} dengan harga ${price}. Apakah stoknya masih tersedia?`;
-
+const getStorePhoneNumber = () => {
 	const rawPhone = product.data.business?.phone_number || "";
 	let phone = rawPhone.replace(/\D/g, "");
 
@@ -386,12 +485,79 @@ const handleCheckout = () => {
 		phone = "62" + phone.slice(1);
 	}
 
+	return phone;
+};
+
+const createSalesOrderRecord = (customer, note) => {
+	if (!product.data?.name || !product.data?.business?.name) return;
+
+	createOrderResource.submit(
+		{
+			item: product.data.name,
+			business: product.data.business.name,
+			customer,
+			custom_note: note || "",
+		},
+		{
+			onError(err) {
+				console.error("Gagal membuat Sales Order:", err);
+			},
+		},
+	);
+};
+
+const sendWhatsApp = () => {
+	if (!customerName.value.trim()) {
+		alert("Mohon masukkan nama Anda.");
+		return;
+	}
+
+	const itemName = product.data.item_name;
+	const variantText = selectedVariant.value
+		? ` (Varian: ${selectedVariant.value.attribute_label} - ${selectedVariant.value.value_label})`
+		: "";
+	const priceText = `Rp ${activePrice.value.toLocaleString("id-ID")}`;
+
+	const message = `Halo, saya ${customerName.value}.\n\nSaya tertarik memesan ${itemName}${variantText} dengan total harga ${priceText}. Apakah stoknya masih tersedia?`;
+
+	const phone = getStorePhoneNumber();
+
 	if (!phone) {
 		alert("Nomor WhatsApp toko tidak tersedia.");
 		return;
 	}
 
 	const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+	createSalesOrderRecord(customerName.value.trim(), "");
+	window.open(waUrl, "_blank");
+};
+
+const sendCustomWhatsApp = () => {
+	if (!customBuyerName.value.trim()) {
+		alert("Mohon masukkan nama Anda.");
+		return;
+	}
+
+	if (!customNote.value.trim()) {
+		alert("Mohon isi request custom Anda dulu.");
+		return;
+	}
+
+	const itemName = product.data.item_name;
+
+	const message = `Halo, saya ${customBuyerName.value.trim()}. Saya tertarik dengan produk ${itemName}. Saya ada request khusus: ${customNote.value.trim()}. Apakah bisa?`;
+
+	const phone = getStorePhoneNumber();
+
+	if (!phone) {
+		alert("Nomor WhatsApp toko tidak tersedia.");
+		return;
+	}
+
+	const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+	createSalesOrderRecord(customBuyerName.value.trim(), customNote.value.trim());
 	window.open(waUrl, "_blank");
 };
 </script>
@@ -404,7 +570,6 @@ const handleCheckout = () => {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
-
 .slide-right-enter-active,
 .slide-right-leave-active {
 	transition: transform 0.5s ease-in-out;
@@ -415,7 +580,6 @@ const handleCheckout = () => {
 .slide-right-leave-to {
 	transform: translateX(-100%);
 }
-
 .slide-left-enter-active,
 .slide-left-leave-active {
 	transition: transform 0.5s ease-in-out;

@@ -1,5 +1,5 @@
 <template>
-	<div v-if="store.loading" class="flex items-center justify-center h-screen text-gray-500">
+	<div v-if="store.loading" class="flex items-center justify-center h-screen bizpage-text-muted">
 		Memuat data toko...
 	</div>
 	<div
@@ -8,7 +8,7 @@
 	>
 		<section class="w-full">
 			<div
-				class="relative w-full aspect-[16/6] sm:aspect-[16/5] md:aspect-[4/1] bg-gray-100 overflow-hidden rounded-[1rem]"
+				class="relative w-full aspect-[16/6] sm:aspect-[16/5] md:aspect-[4/1] bg-[var(--bg-subtle)] overflow-hidden rounded-[1rem]"
 			>
 				<img
 					v-if="store.data?.banner"
@@ -16,28 +16,25 @@
 					alt="Banner"
 					class="w-full h-full object-cover"
 				/>
-				<div
-					v-else
-					class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300"
-				></div>
-				<div
-					class="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"
-				></div>
+				<div v-else class="w-full h-full bizpage-placeholder-gradient"></div>
+				<div class="absolute inset-0 bizpage-banner-overlay"></div>
 			</div>
-			<div class="relative px-4 sm:px-8 max-w-5xl mx-auto pb-6 border-b border-gray-100">
+			<div
+				class="relative px-4 sm:px-8 max-w-5xl mx-auto pt-5 sm:pt-6 pb-6 border-b border-[var(--border-subtle)]"
+			>
 				<div
-					class="flex flex-col items-center text-center sm:flex-row sm:items-end sm:text-left sm:gap-5 -mt-12 sm:-mt-14"
+					class="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:gap-5"
 				>
 					<div class="relative shrink-0">
 						<img
 							v-if="store.data?.image"
 							:src="`${apiUrl}${store.data.image}`"
 							alt="Logo"
-							class="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full object-cover ring-4 ring-white shadow-md bg-white"
+							class="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full object-cover ring-4 bizpage-avatar-ring"
 						/>
 						<div
 							v-else
-							class="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full ring-4 ring-white shadow-md bg-gray-200 flex items-center justify-center text-gray-400 text-xs"
+							class="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full ring-4 bizpage-avatar-ring bizpage-avatar-placeholder flex items-center justify-center text-xs"
 						>
 							No Logo
 						</div>
@@ -45,7 +42,7 @@
 					<div class="mt-4 sm:mt-0 sm:pb-1 max-w-full sm:max-w-md md:max-w-xl">
 						<div class="flex items-center gap-2 justify-center sm:justify-start">
 							<h1
-								class="text-2xl sm:text-2xl md:text-3xl font-bold tracking-tight text-gray-900"
+								class="text-2xl sm:text-2xl md:text-3xl font-bold tracking-tight bizpage-text-heading"
 							>
 								{{ store.data?.business_name || "Memuat..." }}
 							</h1>
@@ -54,7 +51,7 @@
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
 								fill="currentColor"
-								class="h-5 w-5 text-[var(--button-bg)] shrink-0"
+								class="h-5 w-5 bizpage-icon-accent shrink-0"
 							>
 								<path
 									fill-rule="evenodd"
@@ -65,13 +62,13 @@
 						</div>
 						<span
 							v-if="store.data?.category"
-							class="inline-block mt-1.5 text-xs font-medium text-[var(--button-bg)] bg-[var(--button-bg)]/10 px-2.5 py-0.5 rounded-full"
+							class="inline-block mt-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full bizpage-badge-accent"
 						>
 							{{ store.data.category }}
 						</span>
 
 						<p
-							class="mt-2 text-sm sm:text-[15px] text-gray-500 leading-relaxed line-clamp-2 sm:line-clamp-3"
+							class="mt-2 text-sm sm:text-[15px] bizpage-text-muted leading-relaxed line-clamp-2 sm:line-clamp-3"
 						>
 							{{ store.data?.description }}
 						</p>
@@ -80,21 +77,37 @@
 			</div>
 		</section>
 
-		<div v-if="store.loading" class="text-center py-4 text-gray-500">Memuat data toko...</div>
-		<div v-else-if="!store.data" class="text-center py-4 text-gray-500">
+		<div v-if="store.loading" class="text-center py-4 bizpage-text-muted">
+			Memuat data toko...
+		</div>
+		<div v-else-if="!store.data" class="text-center py-4 bizpage-text-muted">
 			Toko tidak ditemukan.
 		</div>
 
 		<h1 class="mt-4 mb-8 text-2xl font-bold">Recomended For you!</h1>
 
-		<div v-if="recommendedItem.loading" class="text-center py-4 text-gray-500">
+		<div v-if="recommendedItem.loading" class="text-center py-4 bizpage-text-muted">
 			Memuat produk...
 		</div>
 		<div
 			v-else-if="!recommendedItem.data || recommendedItem.data.length === 0"
-			class="text-center py-4 text-gray-500"
+			class="flex flex-col items-center justify-center gap-2 w-full h-[21rem] rounded-[0.5rem] bizpage-empty-card"
 		>
-			Belum ada produk.
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="w-9 h-9 bizpage-empty-card__icon"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+				/>
+			</svg>
+			<span class="text-sm font-medium">Belum ada produk</span>
 		</div>
 		<div
 			v-else
@@ -103,30 +116,64 @@
 			<div
 				v-for="i in recommendedItem.data"
 				:key="i.name"
-				@click="
-					router.push({ name: 'ProductDetail', params: { store: slug, slug: i.slug } })
-				"
-				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden shadow-md bg-white"
+				@click="goToProduct(i)"
+				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden bizpage-card-item"
 			>
-				<div class="w-full h-[14rem] bg-gray-100 flex items-center justify-center">
+				<div
+					class="w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
+				>
 					<img
 						v-if="i.image"
 						:src="`${apiUrl}${i.image}`"
 						:alt="i.item_name"
 						class="w-full h-full object-cover"
 					/>
-					<div v-else class="text-gray-400 text-sm">No Image</div>
+					<div v-else class="text-sm">No Image</div>
 				</div>
 				<div
-					class="bg-indigo-500 w-full h-[7rem] flex flex-col justify-between p-[0.6rem]"
+					class="w-full h-[7rem] flex flex-col justify-between p-[0.6rem] bizpage-card-item__info"
 				>
 					<div class="flex flex-col">
-						<h1 class="text-base font-bold text-white leading-tight line-clamp-1">
+						<h1
+							class="text-base font-bold leading-tight line-clamp-1 bizpage-card-item__title"
+						>
 							{{ i.item_name }}
 						</h1>
-						<h2 class="text-lg font-bold text-white/90">
+						<div v-if="i.discount_percent > 0" class="flex flex-col">
+							<span class="text-xs bizpage-card-item__price--original">
+								Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+							</span>
+							<h2 class="text-lg font-bold bizpage-card-item__price">
+								Rp. {{ i.discounted_price.toLocaleString("id-ID") }}
+							</h2>
+						</div>
+						<h2 v-else class="text-lg font-bold bizpage-card-item__price">
 							Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
 						</h2>
+
+						<div class="flex items-center gap-1.5 mt-1.5">
+							<div
+								v-if="i.cod"
+								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"
+								title="Bisa COD"
+							>
+								<img :src="CodIcon" alt="COD" class="w-3.5 h-3.5" />
+								<span class="text-[9px] font-bold uppercase tracking-wide"
+									>COD</span
+								>
+							</div>
+
+							<div
+								v-if="i.delivery"
+								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 border border-blue-200"
+								title="Bisa Delivery"
+							>
+								<img :src="DeliveryIcon" alt="Delivery" class="w-3.5 h-3.5" />
+								<span class="text-[9px] font-bold uppercase tracking-wide"
+									>Delivery</span
+								>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -134,7 +181,7 @@
 		<div
 			@touchstart="handleTouchStart"
 			@touchend="handleTouchEnd"
-			class="relative w-full h-[20rem] bg-gray-100 mt-6 mb-6 rounded-[1rem] overflow-hidden group select-none"
+			class="relative w-full h-[20rem] bg-[var(--bg-subtle)] mt-6 mb-6 rounded-[1rem] overflow-hidden group select-none"
 		>
 			<template v-if="store.data?.section_banner && store.data.section_banner.length > 0">
 				<transition :name="slideDirection">
@@ -147,15 +194,12 @@
 				</transition>
 			</template>
 
-			<div
-				v-else
-				class="w-full h-full absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300"
-			></div>
+			<div v-else class="w-full h-full absolute inset-0 bizpage-placeholder-gradient"></div>
 
 			<button
 				v-if="store.data?.section_banner && store.data.section_banner.length > 1"
 				@click="slideLeft"
-				class="absolute z-10 left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/70 hover:bg-white text-gray-800 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex"
+				class="absolute z-10 left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex bizpage-slider-btn"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +220,7 @@
 			<button
 				v-if="store.data?.section_banner && store.data.section_banner.length > 1"
 				@click="slideRight"
-				class="absolute z-10 right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/70 hover:bg-white text-gray-800 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex"
+				class="absolute z-10 right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer hidden md:flex bizpage-slider-btn"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -195,50 +239,74 @@
 			</button>
 		</div>
 
-		<h1 class="mt-4 mb-8 text-2xl font-bold">Spesial Diskon</h1>
+		<template v-if="item.loading || (item.data && item.data.length > 0)">
+			<h1 class="mt-4 mb-8 text-2xl font-bold">Spesial Diskon</h1>
 
-		<div v-if="item.loading" class="text-center py-4 text-gray-500">Memuat produk...</div>
-		<div
-			v-else-if="!item.data || item.data.length === 0"
-			class="text-center py-4 text-gray-500"
-		>
-			Belum ada produk.
-		</div>
-		<div
-			v-else
-			class="flex flex-nowrap overflow-x-auto gap-4 pb-2 no-scrollbar snap-x snap-mandatory scroll-smooth"
-		>
+			<div v-if="item.loading" class="text-center py-4 bizpage-text-muted">
+				Memuat produk...
+			</div>
 			<div
-				v-for="i in item.data"
-				:key="i.name"
-				@click="
-					router.push({ name: 'ProductDetail', params: { store: slug, slug: i.slug } })
-				"
-				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden shadow-md bg-white"
+				v-else
+				class="flex flex-nowrap overflow-x-auto gap-4 pb-2 no-scrollbar snap-x snap-mandatory scroll-smooth"
 			>
-				<div class="w-full h-[14rem] bg-gray-100 flex items-center justify-center">
-					<img
-						v-if="i.image"
-						:src="`${apiUrl}${i.image}`"
-						:alt="i.item_name"
-						class="w-full h-full object-cover"
-					/>
-					<div v-else class="text-gray-400 text-sm">No Image</div>
-				</div>
 				<div
-					class="bg-indigo-500 w-full h-[7rem] flex flex-col justify-between p-[0.6rem]"
+					v-for="i in item.data"
+					:key="i.name"
+					@click="goToProduct(i)"
+					class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden bizpage-card-item"
 				>
-					<div class="flex flex-col">
-						<h1 class="text-base font-bold text-white leading-tight line-clamp-1">
-							{{ i.item_name }}
-						</h1>
-						<h2 class="text-lg font-bold text-white/90">
-							Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
-						</h2>
+					<div
+						class="w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
+					>
+						<img
+							v-if="i.image"
+							:src="`${apiUrl}${i.image}`"
+							:alt="i.item_name"
+							class="w-full h-full object-cover"
+						/>
+						<div v-else class="text-sm">No Image</div>
+					</div>
+					<div
+						class="w-full h-[7rem] flex flex-col justify-between p-[0.6rem] bizpage-card-item__info"
+					>
+						<div class="flex flex-col">
+							<h1
+								class="text-base font-bold leading-tight line-clamp-1 bizpage-card-item__title"
+							>
+								{{ i.item_name }}
+							</h1>
+							<h2 class="text-lg font-bold bizpage-card-item__price">
+								Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+							</h2>
+
+							<div class="flex items-center gap-1.5 mt-1.5">
+								<div
+									v-if="i.cod"
+									class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"
+									title="Bisa COD"
+								>
+									<img :src="CodIcon" alt="COD" class="w-3.5 h-3.5" />
+									<span class="text-[9px] font-bold uppercase tracking-wide"
+										>COD</span
+									>
+								</div>
+
+								<div
+									v-if="i.delivery"
+									class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 border border-blue-200"
+									title="Bisa Delivery"
+								>
+									<img :src="DeliveryIcon" alt="Delivery" class="w-3.5 h-3.5" />
+									<span class="text-[9px] font-bold uppercase tracking-wide"
+										>Delivery</span
+									>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</template>
 
 		<div
 			v-if="itemGroup.data?.length > 0"
@@ -247,10 +315,8 @@
 			<div
 				@click="resetFilter"
 				:class="[
-					'flex items-center gap-2 px-4 py-2 border rounded-full whitespace-nowrap cursor-pointer transition-colors shrink-0',
-					selectedGroup === null
-						? 'bg-[var(--button-bg)] border-[var(--button-bg)] text-white'
-						: 'bg-white border-gray-300 hover:border-gray-400 text-gray-800',
+					'flex items-center gap-2 px-4 py-2 border rounded-full whitespace-nowrap cursor-pointer transition-colors shrink-0 bizpage-filter-chip',
+					selectedGroup === null ? 'is-active' : '',
 				]"
 			>
 				<svg
@@ -259,8 +325,7 @@
 					viewBox="0 0 24 24"
 					stroke-width="1.5"
 					stroke="currentColor"
-					class="w-5 h-5"
-					:class="selectedGroup === null ? 'text-white' : 'text-gray-700'"
+					class="w-5 h-5 bizpage-filter-chip__icon"
 				>
 					<path
 						stroke-linecap="round"
@@ -276,10 +341,8 @@
 				:key="category.name"
 				@click="filterByGroup(category.name)"
 				:class="[
-					'flex items-center gap-2 px-4 py-2 border rounded-full whitespace-nowrap cursor-pointer transition-colors shrink-0',
-					selectedGroup === category.name
-						? 'bg-[var(--button-bg)] border-[var(--button-bg)] text-white'
-						: 'bg-white border-gray-300 hover:border-gray-400 text-gray-800',
+					'flex items-center gap-2 px-4 py-2 border rounded-full whitespace-nowrap cursor-pointer transition-colors shrink-0 bizpage-filter-chip',
+					selectedGroup === category.name ? 'is-active' : '',
 				]"
 			>
 				<img
@@ -300,17 +363,31 @@
 			<div
 				v-for="n in 4"
 				:key="n"
-				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] rounded-[0.5rem] overflow-hidden shadow-md bg-white animate-pulse"
+				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] rounded-[0.5rem] overflow-hidden animate-pulse bizpage-card-item"
 			>
-				<div class="w-full h-[14rem] bg-gray-200"></div>
-				<div class="bg-gray-100 w-full h-[7rem]"></div>
+				<div class="w-full h-[14rem] bizpage-skeleton-media"></div>
+				<div class="w-full h-[7rem] bizpage-skeleton-info"></div>
 			</div>
 		</div>
 		<div
 			v-else-if="!allProducts.data || allProducts.data.length === 0"
-			class="text-center py-4 text-gray-500"
+			class="flex flex-col items-center justify-center gap-2 w-full h-[21rem] rounded-[0.5rem] bizpage-empty-card"
 		>
-			Belum ada produk.
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				stroke="currentColor"
+				class="w-9 h-9 bizpage-empty-card__icon"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+				/>
+			</svg>
+			<span class="text-sm font-medium">Belum ada produk</span>
 		</div>
 		<div
 			v-else
@@ -320,30 +397,56 @@
 			<div
 				v-for="i in allProducts.data"
 				:key="i.name"
-				@click="
-					router.push({ name: 'ProductDetail', params: { store: slug, slug: i.slug } })
-				"
-				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] rounded-[0.5rem] overflow-hidden shadow-md bg-white"
+				@click="goToProduct(i)"
+				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] rounded-[0.5rem] overflow-hidden bizpage-card-item"
 			>
-				<div class="w-full h-[14rem] bg-gray-100 flex items-center justify-center">
+				<div
+					class="w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
+				>
 					<img
 						v-if="i.image"
 						:src="`${apiUrl}${i.image}`"
 						:alt="i.item_name"
 						class="w-full h-full object-cover"
 					/>
-					<div v-else class="text-gray-400 text-sm">No Image</div>
+					<div v-else class="text-sm">No Image</div>
 				</div>
 				<div
-					class="bg-indigo-500 w-full h-[7rem] flex flex-col justify-between p-[0.6rem]"
+					class="w-full h-[7rem] flex flex-col justify-between p-[0.6rem] bizpage-card-item__info"
 				>
 					<div class="flex flex-col">
-						<h1 class="text-base font-bold text-white leading-tight line-clamp-1">
+						<h1
+							class="text-base font-bold leading-tight line-clamp-1 bizpage-card-item__title"
+						>
 							{{ i.item_name }}
 						</h1>
-						<h2 class="text-lg font-bold text-white/90">
+						<h2 class="text-lg font-bold bizpage-card-item__price">
 							Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
 						</h2>
+
+						<div class="flex items-center gap-1.5 mt-1.5">
+							<div
+								v-if="i.cod"
+								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"
+								title="Bisa COD"
+							>
+								<img :src="CodIcon" alt="COD" class="w-3.5 h-3.5" />
+								<span class="text-[9px] font-bold uppercase tracking-wide"
+									>COD</span
+								>
+							</div>
+
+							<div
+								v-if="i.delivery"
+								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 border border-blue-200"
+								title="Bisa Delivery"
+							>
+								<img :src="DeliveryIcon" alt="Delivery" class="w-3.5 h-3.5" />
+								<span class="text-[9px] font-bold uppercase tracking-wide"
+									>Delivery</span
+								>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -353,8 +456,10 @@
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { createResource } from "frappe-ui";
+import { createResource, call } from "frappe-ui";
 import { ref } from "vue";
+import CodIcon from "../../../assets/icon/cod.svg";
+import DeliveryIcon from "../../../assets/icon/delivery.svg";
 
 const route = useRoute();
 const router = useRouter();
@@ -364,6 +469,20 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const currentIndex = ref(0);
 const slideDirection = ref("slide-right");
 const selectedGroup = ref(null);
+
+const goToProduct = (i) => {
+	call("bizpage.api.public_api.track_item_click", { slug: i.slug }).catch((err) =>
+		console.error("Gagal mencatat klik:", err),
+	);
+	router.push({
+		name: "ProductDetail",
+		params: {
+			store: slug,
+			category: i.item_group_slug || "produk",
+			slug: i.slug,
+		},
+	});
+};
 
 const slideLeft = () => {
 	slideDirection.value = "slide-left";
@@ -425,7 +544,7 @@ const store = createResource({
 });
 
 const item = createResource({
-	url: "bizpage.api.public_api.get_items",
+	url: "bizpage.api.public_api.get_discounted_items",
 	params: {
 		slug: slug,
 	},

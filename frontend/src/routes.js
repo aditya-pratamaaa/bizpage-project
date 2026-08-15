@@ -34,10 +34,10 @@ const routes = [
 		meta: { title: "Profile Toko" },
 	},
 	{
-		path: "/:store/:slug",
+		path: "/:store/:category/:slug",
 		name: "ProductDetail",
 		component: () => import("./views/pages/public/product-detail.vue"),
-		meta: { title: "Detail Produk", guestOnly: true },
+		meta: { title: "Detail Produk" },
 	},
 	{
 		path: "/closed",

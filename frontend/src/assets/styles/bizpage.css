@@ -1,0 +1,250 @@
+/* =========================================================
+   bizpage.css
+   Komponen berulang di halaman toko (StorePage), dipisah biar
+   nggak duplikat class panjang di template. Cuma urusan WARNA,
+   ukuran/layout tetap dihandle utility class di template.
+   ========================================================= */
+
+/* --- Card produk (dipakai di: recommended, spesial diskon, semua produk) --- */
+.bizpage-card-item {
+	background-color: var(--bg-page);
+	box-shadow:
+		0 4px 6px -1px rgb(0 0 0 / 0.1),
+		0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.bizpage-card-item__media {
+	background-color: var(--bg-subtle);
+	color: var(--text-muted);
+}
+
+.bizpage-card-item__info {
+	background-color: var(--button-bg);
+}
+
+.bizpage-card-item__title {
+	color: var(--button-text);
+}
+
+.bizpage-card-item__price {
+	color: var(--button-text);
+	opacity: 0.9;
+}
+
+.bizpage-card-item__price--original {
+	color: var(--button-text);
+	opacity: 0.6;
+	text-decoration-line: line-through;
+}
+
+/* --- Skeleton loading utk card produk --- */
+.bizpage-skeleton-media {
+	background-color: var(--surface);
+}
+
+.bizpage-skeleton-info {
+	background-color: var(--bg-subtle);
+}
+
+/* --- Chip filter kategori --- */
+.bizpage-filter-chip {
+	background-color: var(--bg-page);
+	border-color: var(--border);
+	color: var(--text);
+}
+
+.bizpage-filter-chip:hover {
+	border-color: var(--border-hover);
+}
+
+.bizpage-filter-chip__icon {
+	color: var(--icon);
+}
+
+.bizpage-filter-chip.is-active {
+	background-color: var(--button-bg);
+	border-color: var(--button-bg);
+	color: var(--button-text);
+}
+
+.bizpage-filter-chip.is-active .bizpage-filter-chip__icon {
+	color: var(--button-text);
+}
+
+/* --- Tombol panah slider banner --- */
+.bizpage-slider-btn {
+	background-color: color-mix(in srgb, var(--bg-page) 70%, transparent);
+	color: var(--text);
+	box-shadow:
+		0 4px 6px -1px rgb(0 0 0 / 0.1),
+		0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.bizpage-slider-btn:hover {
+	background-color: var(--bg-page);
+}
+
+/* --- Placeholder gradient (dipakai kalau gambar belum ada: banner, section banner) --- */
+.bizpage-placeholder-gradient {
+	background-image: linear-gradient(to bottom right, var(--surface), var(--surface-hover));
+}
+
+/* --- Overlay gelap tipis di atas banner --- */
+.bizpage-banner-overlay {
+	background-image: linear-gradient(to top, rgb(0 0 0 / 0.25), transparent, transparent);
+}
+
+/* --- Avatar / logo toko --- */
+.bizpage-avatar-ring {
+	--tw-ring-color: var(--bg-page);
+	background-color: var(--bg-page);
+	box-shadow:
+		0 4px 6px -1px rgb(0 0 0 / 0.1),
+		0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.bizpage-avatar-placeholder {
+	background-color: var(--surface);
+	color: var(--text-muted);
+}
+
+/* --- Badge kategori toko & icon verified --- */
+.bizpage-badge-accent {
+	color: var(--text-accent);
+	background-color: var(--surface-accent);
+}
+
+.bizpage-icon-accent {
+	color: var(--text-accent);
+}
+
+/* --- Kartu placeholder "belum ada produk" (ukuran ngikut kartu produk asli) --- */
+.bizpage-empty-card {
+	border: 1.5px dashed var(--border);
+	background-color: var(--bg-subtle);
+	color: var(--text-muted);
+}
+
+.bizpage-empty-card__icon {
+	color: var(--icon);
+}
+
+/* --- Teks umum (loading state, judul toko, deskripsi) --- */
+.bizpage-text-muted {
+	color: var(--text-muted);
+}
+
+.bizpage-text-heading {
+	color: var(--text);
+}
+
+.bizpage-text-accent {
+	color: var(--text-accent);
+}
+
+.bizpage-text-accent:hover {
+	color: var(--text-accent-strong);
+}
+
+/* --- Link "Kembali" (nav back) --- */
+.bizpage-back-link {
+	color: var(--text-muted);
+}
+
+.bizpage-back-link:hover {
+	color: var(--text);
+}
+
+/* =========================================================
+   Product Detail page
+   ========================================================= */
+
+/* --- Galeri foto produk --- */
+.bizpage-gallery-media {
+	background-color: var(--bg-subtle);
+	color: var(--text-muted);
+}
+
+.bizpage-image-counter {
+	background-color: rgb(0 0 0 / 0.55);
+	color: #ffffff;
+}
+
+.bizpage-gallery-thumb {
+	border-color: transparent;
+	background-color: var(--bg-subtle);
+}
+
+.bizpage-gallery-thumb:hover {
+	border-color: var(--border-hover);
+}
+
+.bizpage-gallery-thumb.is-active {
+	border-color: var(--button-bg);
+}
+
+/* --- Harga produk --- */
+.bizpage-price {
+	color: var(--text-accent-strong);
+}
+
+/* --- Chip pilihan varian --- */
+.bizpage-variant-chip {
+	border-color: var(--border);
+	color: var(--text-muted);
+	background-color: var(--bg-page);
+}
+
+.bizpage-variant-chip:hover {
+	border-color: var(--border-hover);
+}
+
+.bizpage-variant-chip.is-active {
+	border-color: var(--button-bg);
+	background-color: var(--surface-accent);
+	color: var(--text-accent-strong);
+}
+
+/* --- Kartu info penjual --- */
+.bizpage-info-card {
+	border-color: var(--border);
+	background-color: var(--bg-page);
+}
+
+.bizpage-info-card:hover {
+	border-color: var(--border-hover);
+}
+
+/* --- Tombol WhatsApp (dipakai di CTA utama & tombol kirim di modal) --- */
+.bizpage-btn-whatsapp {
+	background-color: #16a34a;
+	color: #ffffff;
+}
+
+.bizpage-btn-whatsapp:hover {
+	background-color: #15803d;
+}
+
+/* --- Tombol batal (modal) --- */
+.bizpage-btn-cancel {
+	background-color: var(--bg-page);
+	border-color: var(--border);
+	color: var(--text);
+}
+
+.bizpage-btn-cancel:hover {
+	background-color: var(--bg-subtle);
+}
+
+/* --- Input form (modal checkout) --- */
+.bizpage-input {
+	background-color: var(--bg-page);
+	border-color: var(--border);
+	color: var(--text);
+}
+
+.bizpage-input:focus {
+	outline: none;
+	border-color: var(--button-bg);
+	box-shadow: 0 0 0 1px var(--button-bg);
+}
