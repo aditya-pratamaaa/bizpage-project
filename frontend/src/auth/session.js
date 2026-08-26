@@ -15,8 +15,7 @@ export const session = reactive({
 	user: sessionUser(),
 	isLoggedIn: computed(() => !!session.user),
 });
-
-// Ambil role user dari backend (owner / super_admin).
+// Ambil role user dari backend (owner / admin).
 // GANTI url di bawah dengan API kamu sendiri, contoh whitelisted method di Frappe:
 //
 //   @frappe.whitelist()
@@ -24,9 +23,8 @@ export const session = reactive({
 //       user = frappe.session.user
 //       roles = frappe.get_roles(user)
 //       if "System Manager" in roles or "Super Admin" in roles:
-//           return {"role": "super_admin"}
+//           return {"role": "admin"}
 //       return {"role": "owner"}
-//
 session.userRole = createResource({
 	url: "bizpage.api.auth_api.get_user_role",
 	auto: false,

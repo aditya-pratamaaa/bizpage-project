@@ -116,6 +116,8 @@ h6 {
 	--bg-accent: var(--lime-1); /* background bernuansa lime, halus */
 	--bg-accent-subtle: var(--lime-2);
 
+	--bg-clear: #ffffff;
+
 	/* --- Komponen / permukaan interaktif (card, input, dsb) --- */
 	--surface: var(--gray-3);
 	--surface-hover: var(--gray-4);
@@ -132,6 +134,8 @@ h6 {
 
 	--text-accent: var(--lime-11); /* teks pakai warna lime, tetap aksesibel */
 	--text-accent-strong: var(--lime-12);
+
+	--text-lime: var(--lime-10);
 
 	/* --- Tombol / elemen solid (pakai lime sebagai warna aksen utama) --- */
 	--button-bg: var(--lime-9);

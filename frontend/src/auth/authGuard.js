@@ -8,8 +8,9 @@ import { session, ensureUserRole } from "./session.js";
 // kalau user salah akses (guestOnly page) atau salah role.
 const HOME_BY_ROLE = {
 	owner: { name: "Dashboard" },
-	admin: { name: "AdminDashboard" }, // aktifkan kalau route /admin sudah di-uncomment
+	admin: { name: "AdminDashboard" },
 };
+const DEFAULT_HOME = { name: "Dashboard" };
 
 export function setupAuthGuard(router) {
 	router.beforeEach(async (to, from, next) => {

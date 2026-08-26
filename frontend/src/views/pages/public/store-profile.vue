@@ -90,89 +90,77 @@
 			Memuat produk...
 		</div>
 		<div
-			v-else-if="!recommendedItem.data || recommendedItem.data.length === 0"
-			class="flex flex-col items-center justify-center gap-2 w-full h-[21rem] rounded-[0.5rem] bizpage-empty-card"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				class="w-9 h-9 bizpage-empty-card__icon"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-				/>
-			</svg>
-			<span class="text-sm font-medium">Belum ada produk</span>
-		</div>
-		<div
-			v-else
-			class="flex flex-nowrap overflow-x-auto gap-4 pb-2 no-scrollbar snap-x snap-mandatory scroll-smooth"
+			v-for="i in recommendedItem.data"
+			:key="i.name"
+			@click="goToProduct(i)"
+			class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden bizpage-card-item"
 		>
 			<div
-				v-for="i in recommendedItem.data"
-				:key="i.name"
-				@click="goToProduct(i)"
-				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden bizpage-card-item"
+				class="relative w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
 			>
 				<div
-					class="w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
+					v-if="i.discount_percent > 0"
+					class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider"
 				>
-					<img
-						v-if="i.image"
-						:src="`${apiUrl}${i.image}`"
-						:alt="i.item_name"
-						class="w-full h-full object-cover"
-					/>
-					<div v-else class="text-sm">No Image</div>
+					Diskon {{ i.discount_percent }}%
 				</div>
-				<div
-					class="w-full h-[7rem] flex flex-col justify-between p-[0.6rem] bizpage-card-item__info"
-				>
-					<div class="flex flex-col">
-						<h1
-							class="text-base font-bold leading-tight line-clamp-1 bizpage-card-item__title"
+				<img
+					v-if="i.image"
+					:src="`${apiUrl}${i.image}`"
+					:alt="i.item_name"
+					class="w-full h-full object-cover"
+				/>
+				<div v-else class="text-sm">No Image</div>
+			</div>
+			<div
+				class="w-full h-[7rem] flex flex-col justify-between p-[0.6rem] bizpage-card-item__info"
+			>
+				<div class="flex flex-col">
+					<h1
+						class="text-base font-bold leading-tight line-clamp-1 bizpage-card-item__title"
+					>
+						{{ i.item_name }}
+					</h1>
+					<div v-if="i.discount_percent > 0" class="flex flex-col mt-0.5">
+						<span class="text-[11px] text-gray-400 line-through leading-none">
+							Rp.{{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+						</span>
+						<h2
+							class="text-lg font-bold bizpage-card-item-discount__price leading-tight"
 						>
-							{{ i.item_name }}
-						</h1>
-						<div v-if="i.discount_percent > 0" class="flex flex-col">
-							<span class="text-xs bizpage-card-item__price--original">
-								Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
-							</span>
-							<h2 class="text-lg font-bold bizpage-card-item__price">
-								Rp. {{ i.discounted_price.toLocaleString("id-ID") }}
-							</h2>
-						</div>
-						<h2 v-else class="text-lg font-bold bizpage-card-item__price">
-							Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+							Rp.{{
+								i.discounted_price
+									? i.discounted_price.toLocaleString("id-ID")
+									: "-"
+							}}
 						</h2>
+					</div>
+					<h2
+						v-else
+						class="text-lg font-bold mt-0.5 bizpage-card-item__price leading-tight"
+					>
+						Rp.{{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+					</h2>
 
-						<div class="flex items-center gap-1.5 mt-1.5">
-							<div
-								v-if="i.cod"
-								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"
-								title="Bisa COD"
-							>
-								<img :src="CodIcon" alt="COD" class="w-3.5 h-3.5" />
-								<span class="text-[9px] font-bold uppercase tracking-wide"
-									>COD</span
-								>
-							</div>
+					<div class="flex items-center gap-1.5 mt-3.5">
+						<div
+							v-if="i.cod"
+							class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"
+							title="Bisa COD"
+						>
+							<img :src="CodIcon" alt="COD" class="w-3.5 h-3.5" />
+							<span class="text-[9px] font-bold uppercase tracking-wide">COD</span>
+						</div>
 
-							<div
-								v-if="i.delivery"
-								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 border border-blue-200"
-								title="Bisa Delivery"
+						<div
+							v-if="i.delivery"
+							class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 text-blue-600 border border-blue-200"
+							title="Bisa Delivery"
+						>
+							<img :src="DeliveryIcon" alt="Delivery" class="w-3.5 h-3.5" />
+							<span class="text-[9px] font-bold uppercase tracking-wide"
+								>Delivery</span
 							>
-								<img :src="DeliveryIcon" alt="Delivery" class="w-3.5 h-3.5" />
-								<span class="text-[9px] font-bold uppercase tracking-wide"
-									>Delivery</span
-								>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -255,19 +243,15 @@
 					@click="goToProduct(i)"
 					class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] shrink-0 snap-start rounded-[0.5rem] overflow-hidden bizpage-card-item"
 				>
-					<!-- Tambahkan class 'relative' di div ini untuk label diskon -->
 					<div
 						class="relative w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
 					>
-						<!-- === LABEL DISKON MELAYANG === -->
 						<div
 							v-if="i.discount_percent > 0"
 							class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider"
 						>
 							Diskon {{ i.discount_percent }}%
 						</div>
-						<!-- ============================= -->
-
 						<img
 							v-if="i.image"
 							:src="`${apiUrl}${i.image}`"
@@ -286,34 +270,28 @@
 							>
 								{{ i.item_name }}
 							</h1>
-
-							<!-- === HARGA DISKON & CORET === -->
 							<div v-if="i.discount_percent > 0" class="flex flex-col mt-0.5">
 								<span class="text-[11px] text-gray-400 line-through leading-none">
-									Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+									Rp.{{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
 								</span>
 								<h2
-									class="text-lg font-bold text-red-600 bizpage-card-item__price leading-tight"
+									class="text-lg font-bold bizpage-card-item-discount__price leading-tight"
 								>
-									Rp.
-									{{
+									Rp.{{
 										i.discounted_price
 											? i.discounted_price.toLocaleString("id-ID")
 											: "-"
 									}}
 								</h2>
 							</div>
-
-							<!-- Harga Normal (jika tidak ada diskon) -->
 							<h2
 								v-else
 								class="text-lg font-bold mt-0.5 bizpage-card-item__price leading-tight"
 							>
-								Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+								Rp.{{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
 							</h2>
-							<!-- ============================ -->
 
-							<div class="flex items-center gap-1.5 mt-1.5">
+							<div class="flex items-center gap-1.5 mt-3.5">
 								<div
 									v-if="i.cod"
 									class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"
@@ -435,8 +413,14 @@
 				class="flex flex-col w-[calc(50%-0.5rem)] min-w-[140px] sm:w-[15.1rem] rounded-[0.5rem] overflow-hidden bizpage-card-item"
 			>
 				<div
-					class="w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
+					class="relative w-full h-[14rem] flex items-center justify-center bizpage-card-item__media"
 				>
+					<div
+						v-if="i.discount_percent > 0"
+						class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider"
+					>
+						Diskon {{ i.discount_percent }}%
+					</div>
 					<img
 						v-if="i.image"
 						:src="`${apiUrl}${i.image}`"
@@ -454,11 +438,28 @@
 						>
 							{{ i.item_name }}
 						</h1>
-						<h2 class="text-lg font-bold bizpage-card-item__price">
+						<div v-if="i.discount_percent > 0" class="flex flex-col mt-0.5">
+							<span class="text-[11px] text-gray-400 line-through leading-none">
+								Rp.{{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
+							</span>
+							<h2
+								class="text-lg font-bold bizpage-card-item-discount__price leading-tight"
+							>
+								Rp.{{
+									i.discounted_price
+										? i.discounted_price.toLocaleString("id-ID")
+										: "-"
+								}}
+							</h2>
+						</div>
+						<h2
+							v-else
+							class="text-lg font-bold mt-0.5 bizpage-card-item__price leading-tight"
+						>
 							Rp. {{ i.price ? i.price.toLocaleString("id-ID") : "-" }}
 						</h2>
 
-						<div class="flex items-center gap-1.5 mt-1.5">
+						<div class="flex items-center gap-1.5 mt-3.5">
 							<div
 								v-if="i.cod"
 								class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 border border-orange-200"

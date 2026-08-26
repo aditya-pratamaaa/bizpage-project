@@ -102,7 +102,7 @@ export const menuItems = [
 		children: [
 			{
 				name: "Pengaturan Website",
-				route: "website.settings",
+				route: "Website Settings",
 				icon: "cog-outline",
 				roles: ["owner", "admin"],
 			},

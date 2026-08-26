@@ -49,7 +49,7 @@ def get_store_profile(slug):
 
 
 @frappe.whitelist(allow_guest=True)
-def get_items(slug, recomended=None, item_group=None):
+def get_items(slug, recomended=None, item_group=None, exclude_special=None):
     business = frappe.get_all(
         "Business",
         filters={"slug": slug},
@@ -84,8 +84,8 @@ def get_items(slug, recomended=None, item_group=None):
             "business",
             "recomended",
             "slug",
-			"cod",
-    "delivery",
+            "cod",
+            "delivery",
         ],
     )
 
@@ -105,6 +105,35 @@ def get_items(slug, recomended=None, item_group=None):
         for p in prices
     }
 
+    # --- HITUNG DISKON AKTIF UNTUK SEMUA ITEM (bukan cuma di get_discounted_items) ---
+    today = nowdate()
+    active_discounts = frappe.get_all(
+        "Discount",
+        filters={
+            "business": business_name,
+            "start_date": ["<=", today],
+            "end_date": [">=", today],
+        },
+        fields=["name", "amount"],
+    )
+
+    discount_map = {}
+    if active_discounts:
+        discount_names = [d["name"] for d in active_discounts]
+        discount_items = frappe.get_all(
+            "Item Discount",
+            filters={
+                "parent": ["in", discount_names],
+                "item": ["in", item_docnames],
+            },
+            fields=["item", "parent"],
+        )
+        parent_amount_map = {d["name"]: d for d in active_discounts}
+        for row in discount_items:
+            if row.item:
+                discount_map[row.item] = parent_amount_map.get(row.parent)
+    # ------------------------------------------------------------------------------
+
     group_ids = list(set([i["item_group"] for i in items if i.get("item_group")]))
     group_map = {}
     if group_ids:
@@ -115,13 +144,35 @@ def get_items(slug, recomended=None, item_group=None):
         )
         group_map = {g["name"]: g for g in groups}
 
+    result = []
+
     for item in items:
-        item["price"] = price_map.get(item["name"])
+        base_price = price_map.get(item["name"]) or 0
+        item["price"] = base_price
+
         group = group_map.get(item.get("item_group"))
         item["item_group_name"] = group["item_group_name"] if group else None
         item["item_group_slug"] = group["slug"] if group and group.get("slug") else None
 
-    return items
+        discount_info = discount_map.get(item["name"])
+        if discount_info and base_price:
+            discount_amount = float(discount_info["amount"] or 0)
+            item["discount_percent"] = discount_amount
+            item["discounted_price"] = round(base_price - (base_price * discount_amount / 100))
+        else:
+            item["discount_percent"] = 0
+            item["discounted_price"] = base_price
+
+        # Kalau dipanggil dari "Semua Produk", skip item yang recomended atau lagi diskon
+        if exclude_special:
+            is_recomended = item.get("recomended") == 1
+            is_discounted = item["discount_percent"] > 0
+            if is_recomended or is_discounted:
+                continue
+
+        result.append(item)
+
+    return result
 
 @frappe.whitelist(allow_guest=True)
 def get_item_groups_by_store(slug):

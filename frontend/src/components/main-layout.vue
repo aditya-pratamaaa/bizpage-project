@@ -1,5 +1,7 @@
 <template>
-	<div class="min-h-screen bg-[var(--bg-page)] text-[var(--text)] flex flex-col md:flex-row">
+	<div
+		class="h-screen overflow-hidden bg-[var(--bg-page)] text-[var(--text)] flex flex-col md:flex-row"
+	>
 		<!-- Mobile Header -->
 		<header
 			class="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--bg-subtle)] border-b border-[var(--border)] sticky top-0 z-40"
@@ -11,17 +13,187 @@
 				>
 				<span class="text-lg font-bold tracking-tight text-[var(--text)]">Katalogin</span>
 			</div>
-			<button
-				type="button"
-				@click="isMobileMenuOpen = !isMobileMenuOpen"
-				class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] focus:outline-none"
-				aria-label="Buka menu"
-			>
-				<i
-					class="mdi text-2xl leading-none"
-					:class="isMobileMenuOpen ? 'mdi-close' : 'mdi-menu'"
-				></i>
-			</button>
+
+			<div class="flex items-center gap-1.5">
+				<!-- Toggle Dark Mode (mobile) -->
+				<button
+					type="button"
+					@click="toggleTheme"
+					class="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus:outline-none"
+					:aria-label="
+						theme.mode === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'
+					"
+				>
+					<i
+						class="mdi text-lg leading-none"
+						:class="
+							theme.mode === 'dark' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'
+						"
+					></i>
+				</button>
+
+				<!-- Notifikasi (mobile) -->
+				<div class="relative">
+					<button
+						ref="notifButtonMobileRef"
+						type="button"
+						@click="openNotifications"
+						class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus:outline-none"
+						aria-label="Notifikasi"
+					>
+						<i class="mdi mdi-bell-outline text-lg leading-none"></i>
+						<span
+							v-if="unreadCount > 0"
+							class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--button-bg)] text-[var(--button-text)] px-1 text-[10px] font-bold ring-2 ring-[var(--bg-subtle)]"
+						>
+							{{ unreadCount > 9 ? "9+" : unreadCount }}
+						</span>
+					</button>
+
+					<Transition
+						enter-active-class="transition duration-150 ease-out"
+						enter-from-class="opacity-0 scale-95 -translate-y-1"
+						enter-to-class="opacity-100 scale-100 translate-y-0"
+						leave-active-class="transition duration-100 ease-in"
+						leave-from-class="opacity-100 scale-100 translate-y-0"
+						leave-to-class="opacity-0 scale-95 -translate-y-1"
+					>
+						<div
+							v-if="isNotifOpen"
+							ref="notifMenuMobileRef"
+							class="absolute right-0 mt-2 w-72 max-w-[85vw] bg-[var(--bg-subtle)] rounded-xl border border-[var(--border)] shadow-xl py-1 z-50 origin-top-right max-h-96 overflow-y-auto"
+						>
+							<div class="flex items-center justify-between px-4 py-2">
+								<span
+									class="text-xs font-semibold text-[var(--icon)] uppercase tracking-wide"
+								>
+									Notifikasi
+								</span>
+								<button
+									v-if="unreadCount > 0"
+									type="button"
+									@click="handleMarkAllRead"
+									class="text-xs font-medium text-[var(--text-accent-strong)] hover:underline"
+								>
+									Tandai semua dibaca
+								</button>
+							</div>
+
+							<p
+								v-if="!notifications.data || notifications.data.length === 0"
+								class="px-4 py-6 text-center text-sm text-[var(--icon)]"
+							>
+								Tidak ada notifikasi
+							</p>
+
+							<button
+								v-for="notif in notifications.data"
+								:key="notif.name"
+								type="button"
+								@click="handleNotifClick(notif)"
+								:class="[
+									'flex w-full items-start gap-3 px-4 py-2.5 text-left transition duration-200 hover:bg-[var(--surface-hover)]',
+									!notif.read ? 'bg-[var(--surface-accent-hover)]' : '',
+								]"
+							>
+								<span
+									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-muted)]"
+								>
+									<i
+										class="mdi text-base leading-none"
+										:class="`mdi-${notifIcon(notif)}`"
+									></i>
+								</span>
+								<span class="flex-1 min-w-0">
+									<span
+										class="block text-sm text-[var(--text-muted)] line-clamp-2"
+										>{{ notif.subject }}</span
+									>
+									<span class="block text-[11px] text-[var(--icon)] mt-0.5">{{
+										notif.creation
+									}}</span>
+								</span>
+								<span
+									v-if="!notif.read"
+									class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)]"
+								></span>
+							</button>
+						</div>
+					</Transition>
+				</div>
+
+				<!-- Profile (mobile) -->
+				<div class="relative">
+					<button
+						ref="profileButtonMobileRef"
+						type="button"
+						@click="isProfileOpen = !isProfileOpen"
+						class="flex h-9 w-9 items-center justify-center focus:outline-none"
+						aria-label="Menu profil"
+					>
+						<img
+							:src="user.avatar ? `${apiUrl}${user.avatar}` : ''"
+							alt="Avatar"
+							class="h-8 w-8 rounded-full object-cover ring-2 ring-[var(--button-bg)]/40"
+						/>
+					</button>
+
+					<Transition
+						enter-active-class="transition duration-150 ease-out"
+						enter-from-class="opacity-0 scale-95 -translate-y-1"
+						enter-to-class="opacity-100 scale-100 translate-y-0"
+						leave-active-class="transition duration-100 ease-in"
+						leave-from-class="opacity-100 scale-100 translate-y-0"
+						leave-to-class="opacity-0 scale-95 -translate-y-1"
+					>
+						<div
+							v-if="isProfileOpen"
+							ref="profileMenuMobileRef"
+							class="absolute right-0 mt-2 w-48 bg-[var(--bg-subtle)] rounded-xl border border-[var(--border)] shadow-xl py-1 z-50 origin-top-right"
+						>
+							<div class="px-4 py-2 border-b border-[var(--border-subtle)]">
+								<p class="text-sm font-semibold text-[var(--text)] truncate">
+									{{ user.name }}
+								</p>
+								<p class="text-[11px] text-[var(--icon)] capitalize">{{ role }}</p>
+							</div>
+							<router-link
+								:to="safeRoute('Profile')"
+								class="block px-4 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+								@click="isProfileOpen = false"
+								>Profil Saya</router-link
+							>
+							<router-link
+								:to="safeRoute('Settings')"
+								class="block px-4 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+								@click="isProfileOpen = false"
+								>Pengaturan</router-link
+							>
+							<div class="my-1 border-t border-[var(--border-subtle)]"></div>
+							<button
+								type="button"
+								class="block w-full text-left px-4 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--surface-hover)]"
+								@click="handleLogout"
+							>
+								Keluar
+							</button>
+						</div>
+					</Transition>
+				</div>
+
+				<!-- Hamburger -->
+				<button
+					type="button"
+					@click="isMobileMenuOpen = !isMobileMenuOpen"
+					class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] focus:outline-none"
+					aria-label="Buka menu"
+				>
+					<i
+						class="mdi text-2xl leading-none"
+						:class="isMobileMenuOpen ? 'mdi-close' : 'mdi-menu'"
+					></i>
+				</button>
+			</div>
 		</header>
 
 		<!-- Overlay Mobile -->
@@ -34,13 +206,15 @@
 		<!-- SIDEBAR -->
 		<aside
 			:class="[
-				'fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 bg-[var(--bg-subtle)] border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 ease-in-out',
+				'fixed md:sticky md:top-0 inset-y-0 left-0 z-50 w-72 md:w-64 md:h-screen bg-[var(--bg-subtle)] border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 ease-in-out',
 				isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
 			]"
 		>
 			<div class="flex flex-col min-h-0 flex-1">
 				<!-- Logo Brand -->
-				<div class="h-16 flex items-center gap-2.5 px-5 border-b border-[var(--border)]">
+				<div
+					class="h-16 flex items-center gap-2.5 px-5 border-b border-[var(--border)] shrink-0"
+				>
 					<span
 						class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--button-bg)] to-[var(--button-bg-hover)] text-sm font-bold text-[var(--button-text)] shadow-md"
 						>K</span
@@ -155,7 +329,7 @@
 			</div>
 
 			<!-- Bottom: Role badge + Settings -->
-			<div class="border-t border-[var(--border-subtle)] p-4 space-y-3">
+			<div class="border-t border-[var(--border-subtle)] p-4 space-y-3 shrink-0">
 				<div
 					class="flex items-center gap-2 rounded-xl bg-[var(--surface-accent)] px-3 py-2"
 				>
@@ -169,10 +343,10 @@
 		</aside>
 
 		<!-- CONTENT AREA -->
-		<div class="flex-1 flex flex-col min-w-0">
-			<!-- Top Navbar -->
+		<div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+			<!-- Top Navbar (desktop only, mobile version is in the mobile header above) -->
 			<header
-				class="h-16 border-b border-[var(--border)] bg-[var(--bg-subtle)]/95 backdrop-blur-sm px-4 md:px-8 flex items-center justify-between sticky top-0 z-30"
+				class="hidden md:flex h-16 border-b border-[var(--border)] bg-[var(--bg-subtle)]/95 backdrop-blur-sm px-4 md:px-8 items-center justify-between sticky top-0 z-30 shrink-0"
 			>
 				<!-- Search -->
 				<div class="flex-1 max-w-md relative"></div>
@@ -438,7 +612,6 @@ const role = computed(() => session.currentUser.role);
 const user = computed(() => session.currentUser);
 
 onMounted(async () => {
-	document.addEventListener("click", handleClickOutside);
 	await ensureUserRole();
 });
 
@@ -451,16 +624,28 @@ const profileMenuRef = ref(null);
 const isNotifOpen = ref(false);
 const notifButtonRef = ref(null);
 const notifMenuRef = ref(null);
+const notifButtonMobileRef = ref(null);
+const notifMenuMobileRef = ref(null);
+const profileButtonMobileRef = ref(null);
+const profileMenuMobileRef = ref(null);
 
 function handleClickOutside(event) {
 	if (isProfileOpen.value) {
-		const clickedButton = profileButtonRef.value?.contains(event.target);
-		const clickedMenu = profileMenuRef.value?.contains(event.target);
+		const clickedButton =
+			profileButtonRef.value?.contains(event.target) ||
+			profileButtonMobileRef.value?.contains(event.target);
+		const clickedMenu =
+			profileMenuRef.value?.contains(event.target) ||
+			profileMenuMobileRef.value?.contains(event.target);
 		if (!clickedButton && !clickedMenu) isProfileOpen.value = false;
 	}
 	if (isNotifOpen.value) {
-		const clickedNotifButton = notifButtonRef.value?.contains(event.target);
-		const clickedNotifMenu = notifMenuRef.value?.contains(event.target);
+		const clickedNotifButton =
+			notifButtonRef.value?.contains(event.target) ||
+			notifButtonMobileRef.value?.contains(event.target);
+		const clickedNotifMenu =
+			notifMenuRef.value?.contains(event.target) ||
+			notifMenuMobileRef.value?.contains(event.target);
 		if (!clickedNotifButton && !clickedNotifMenu) isNotifOpen.value = false;
 	}
 }

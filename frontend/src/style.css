@@ -8,3 +8,7 @@
 .btn {
 	@apply normal-case;
 }
+
+/* body {
+	background-color: var(--lime-1);
+} */

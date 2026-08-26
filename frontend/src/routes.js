@@ -43,13 +43,13 @@ const routes = [
 		path: "/closed",
 		name: "Closed",
 		component: () => import("./views/pages/public/closed_page.vue"),
-		meta: { title: "Toko Tutup", guestOnly: true },
+		meta: { title: "Toko Tutup" },
 	},
 	{
 		path: "/not-found",
 		name: "Not Found",
 		component: () => import("./views/pages/public/not_found_page.vue"),
-		meta: { title: "Toko Tidak Ditemukan", guestOnly: true },
+		meta: { title: "Toko Tidak Ditemukan" },
 	},
 	// {
 
@@ -91,6 +91,12 @@ const routes = [
 		component: () => import("./views/pages/owner/products/component/components-list.vue"),
 		meta: { requiresAuth: true, roles: ["owner"], title: "Item" },
 	},
+	{
+		path: "/website/settings",
+		name: "Website Settings",
+		component: () => import("./views/pages/owner/website/web-setting.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Website Settings" },
+	},
 	// {
 	// 	path: "/dashboard/products",
 	// 	name: "Products",
@@ -104,6 +110,7 @@ const routes = [
 	// 	meta: { requiresAuth: true, roles: ["owner"], title: "Portfolio" },
 	// },
 
+	// ---------- ADMIN (wajib login, role: admin) ----------
 	// ---------- ADMIN (wajib login, role: admin) ----------
 	// {
 	// 	path: "/admin",
@@ -123,7 +130,6 @@ const routes = [
 	// 	component: () => import("./views/admin/admin-users.vue"),
 	// 	meta: { requiresAuth: true, roles: ["admin"], title: "Kelola User" },
 	// },
-
 	// ---------- FALLBACK ----------
 	// {
 	// 	path: "/forbidden",

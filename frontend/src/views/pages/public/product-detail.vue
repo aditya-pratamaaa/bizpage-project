@@ -149,15 +149,15 @@
 						v-if="product.data.discount_percent > 0"
 						class="text-sm text-gray-400 line-through"
 					>
-						Rp {{ originalPrice ? originalPrice.toLocaleString("id-ID") : "-" }}
+						Rp{{ originalPrice ? originalPrice.toLocaleString("id-ID") : "-" }}
 					</span>
 
 					<!-- Harga Akhir (Diskon / Normal) -->
 					<h2
 						class="text-xl sm:text-2xl font-bold bizpage-price"
-						:class="product.data.discount_percent > 0 ? 'text-red-600' : ''"
+						:class="product.data.discount_percent > 0 ? 'text-[#bcf379]' : ''"
 					>
-						Rp {{ activePrice ? activePrice.toLocaleString("id-ID") : "-" }}
+						Rp{{ activePrice ? activePrice.toLocaleString("id-ID") : "-" }}
 					</h2>
 				</div>
 
