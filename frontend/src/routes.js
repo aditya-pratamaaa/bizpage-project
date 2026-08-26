@@ -21,7 +21,38 @@ const routes = [
 		component: () => import("./views/auth/register-page.vue"),
 		meta: { title: "Daftar Akun", guestOnly: true },
 	},
+	{
+		path: "/forgot-password",
+		name: "Forgot Password",
+		component: () => import("./views/auth/forgot-password.vue"),
+		meta: { title: "Lupa Password", guestOnly: true },
+	},
+	{
+		path: "/:business",
+		name: "StoreProfile",
+		component: () => import("./views/pages/public/store-profile.vue"),
+		meta: { title: "Profile Toko" },
+	},
+	{
+		path: "/:store/:category/:slug",
+		name: "ProductDetail",
+		component: () => import("./views/pages/public/product-detail.vue"),
+		meta: { title: "Detail Produk" },
+	},
+	{
+		path: "/closed",
+		name: "Closed",
+		component: () => import("./views/pages/public/closed_page.vue"),
+		meta: { title: "Toko Tutup" },
+	},
+	{
+		path: "/not-found",
+		name: "Not Found",
+		component: () => import("./views/pages/public/not_found_page.vue"),
+		meta: { title: "Toko Tidak Ditemukan" },
+	},
 	// {
+
 	// 	// Katalog publik: katalogin.id/:username
 	// 	path: "/:username",
 	// 	name: "PublicCatalog",
@@ -30,6 +61,18 @@ const routes = [
 	// },
 
 	// ---------- OWNER (wajib login, role: owner) ----------
+	{
+		path: "/profile",
+		name: "Profile",
+		component: () => import("./views/pages/dashboard/profile-page.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Profile" },
+	},
+	{
+		path: "/settings",
+		name: "Settings",
+		component: () => import("./views/pages/dashboard/setting-page.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Settings" },
+	},
 	{
 		path: "/dashboard",
 		name: "Dashboard",
@@ -41,6 +84,18 @@ const routes = [
 		name: "Products",
 		component: () => import("./views/pages/owner/products/product/products-list.vue"),
 		meta: { requiresAuth: true, roles: ["owner"], title: "Produk" },
+	},
+	{
+		path: "/items",
+		name: "Item",
+		component: () => import("./views/pages/owner/products/component/components-list.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Item" },
+	},
+	{
+		path: "/website/settings",
+		name: "Website Settings",
+		component: () => import("./views/pages/owner/website/web-setting.vue"),
+		meta: { requiresAuth: true, roles: ["owner"], title: "Website Settings" },
 	},
 	// {
 	// 	path: "/dashboard/products",
@@ -55,6 +110,7 @@ const routes = [
 	// 	meta: { requiresAuth: true, roles: ["owner"], title: "Portfolio" },
 	// },
 
+	// ---------- ADMIN (wajib login, role: admin) ----------
 	// ---------- ADMIN (wajib login, role: admin) ----------
 	// {
 	// 	path: "/admin",
@@ -74,7 +130,6 @@ const routes = [
 	// 	component: () => import("./views/admin/admin-users.vue"),
 	// 	meta: { requiresAuth: true, roles: ["admin"], title: "Kelola User" },
 	// },
-
 	// ---------- FALLBACK ----------
 	// {
 	// 	path: "/forbidden",

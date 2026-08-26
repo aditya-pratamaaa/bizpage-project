@@ -1,51 +1,227 @@
 <template>
-	<div class="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row">
+	<div
+		class="h-screen overflow-hidden bg-[var(--bg-page)] text-[var(--text)] flex flex-col md:flex-row"
+	>
 		<!-- Mobile Header -->
 		<header
-			class="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 sticky top-0 z-40"
+			class="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--bg-subtle)] border-b border-[var(--border)] sticky top-0 z-40"
 		>
 			<div class="flex items-center gap-2.5">
 				<span
-					class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-primary)] text-sm font-bold text-white shadow-md"
+					class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--button-bg)] to-[var(--button-bg-hover)] text-sm font-bold text-[var(--button-text)] shadow-md"
 					>K</span
 				>
-				<span class="text-lg font-bold tracking-tight text-slate-900">Katalogin</span>
+				<span class="text-lg font-bold tracking-tight text-[var(--text)]">Katalogin</span>
 			</div>
-			<button
-				type="button"
-				@click="isMobileMenuOpen = !isMobileMenuOpen"
-				class="flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition duration-300 hover:bg-slate-100 focus:outline-none"
-				aria-label="Buka menu"
-			>
-				<i
-					class="mdi text-2xl leading-none"
-					:class="isMobileMenuOpen ? 'mdi-close' : 'mdi-menu'"
-				></i>
-			</button>
+
+			<div class="flex items-center gap-1.5">
+				<!-- Toggle Dark Mode (mobile) -->
+				<button
+					type="button"
+					@click="toggleTheme"
+					class="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus:outline-none"
+					:aria-label="
+						theme.mode === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'
+					"
+				>
+					<i
+						class="mdi text-lg leading-none"
+						:class="
+							theme.mode === 'dark' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'
+						"
+					></i>
+				</button>
+
+				<!-- Notifikasi (mobile) -->
+				<div class="relative">
+					<button
+						ref="notifButtonMobileRef"
+						type="button"
+						@click="openNotifications"
+						class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus:outline-none"
+						aria-label="Notifikasi"
+					>
+						<i class="mdi mdi-bell-outline text-lg leading-none"></i>
+						<span
+							v-if="unreadCount > 0"
+							class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--button-bg)] text-[var(--button-text)] px-1 text-[10px] font-bold ring-2 ring-[var(--bg-subtle)]"
+						>
+							{{ unreadCount > 9 ? "9+" : unreadCount }}
+						</span>
+					</button>
+
+					<Transition
+						enter-active-class="transition duration-150 ease-out"
+						enter-from-class="opacity-0 scale-95 -translate-y-1"
+						enter-to-class="opacity-100 scale-100 translate-y-0"
+						leave-active-class="transition duration-100 ease-in"
+						leave-from-class="opacity-100 scale-100 translate-y-0"
+						leave-to-class="opacity-0 scale-95 -translate-y-1"
+					>
+						<div
+							v-if="isNotifOpen"
+							ref="notifMenuMobileRef"
+							class="absolute right-0 mt-2 w-72 max-w-[85vw] bg-[var(--bg-subtle)] rounded-xl border border-[var(--border)] shadow-xl py-1 z-50 origin-top-right max-h-96 overflow-y-auto"
+						>
+							<div class="flex items-center justify-between px-4 py-2">
+								<span
+									class="text-xs font-semibold text-[var(--icon)] uppercase tracking-wide"
+								>
+									Notifikasi
+								</span>
+								<button
+									v-if="unreadCount > 0"
+									type="button"
+									@click="handleMarkAllRead"
+									class="text-xs font-medium text-[var(--text-accent-strong)] hover:underline"
+								>
+									Tandai semua dibaca
+								</button>
+							</div>
+
+							<p
+								v-if="!notifications.data || notifications.data.length === 0"
+								class="px-4 py-6 text-center text-sm text-[var(--icon)]"
+							>
+								Tidak ada notifikasi
+							</p>
+
+							<button
+								v-for="notif in notifications.data"
+								:key="notif.name"
+								type="button"
+								@click="handleNotifClick(notif)"
+								:class="[
+									'flex w-full items-start gap-3 px-4 py-2.5 text-left transition duration-200 hover:bg-[var(--surface-hover)]',
+									!notif.read ? 'bg-[var(--surface-accent-hover)]' : '',
+								]"
+							>
+								<span
+									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-muted)]"
+								>
+									<i
+										class="mdi text-base leading-none"
+										:class="`mdi-${notifIcon(notif)}`"
+									></i>
+								</span>
+								<span class="flex-1 min-w-0">
+									<span
+										class="block text-sm text-[var(--text-muted)] line-clamp-2"
+										>{{ notif.subject }}</span
+									>
+									<span class="block text-[11px] text-[var(--icon)] mt-0.5">{{
+										notif.creation
+									}}</span>
+								</span>
+								<span
+									v-if="!notif.read"
+									class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)]"
+								></span>
+							</button>
+						</div>
+					</Transition>
+				</div>
+
+				<!-- Profile (mobile) -->
+				<div class="relative">
+					<button
+						ref="profileButtonMobileRef"
+						type="button"
+						@click="isProfileOpen = !isProfileOpen"
+						class="flex h-9 w-9 items-center justify-center focus:outline-none"
+						aria-label="Menu profil"
+					>
+						<img
+							:src="user.avatar ? `${apiUrl}${user.avatar}` : ''"
+							alt="Avatar"
+							class="h-8 w-8 rounded-full object-cover ring-2 ring-[var(--button-bg)]/40"
+						/>
+					</button>
+
+					<Transition
+						enter-active-class="transition duration-150 ease-out"
+						enter-from-class="opacity-0 scale-95 -translate-y-1"
+						enter-to-class="opacity-100 scale-100 translate-y-0"
+						leave-active-class="transition duration-100 ease-in"
+						leave-from-class="opacity-100 scale-100 translate-y-0"
+						leave-to-class="opacity-0 scale-95 -translate-y-1"
+					>
+						<div
+							v-if="isProfileOpen"
+							ref="profileMenuMobileRef"
+							class="absolute right-0 mt-2 w-48 bg-[var(--bg-subtle)] rounded-xl border border-[var(--border)] shadow-xl py-1 z-50 origin-top-right"
+						>
+							<div class="px-4 py-2 border-b border-[var(--border-subtle)]">
+								<p class="text-sm font-semibold text-[var(--text)] truncate">
+									{{ user.name }}
+								</p>
+								<p class="text-[11px] text-[var(--icon)] capitalize">{{ role }}</p>
+							</div>
+							<router-link
+								:to="safeRoute('Profile')"
+								class="block px-4 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+								@click="isProfileOpen = false"
+								>Profil Saya</router-link
+							>
+							<router-link
+								:to="safeRoute('Settings')"
+								class="block px-4 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
+								@click="isProfileOpen = false"
+								>Pengaturan</router-link
+							>
+							<div class="my-1 border-t border-[var(--border-subtle)]"></div>
+							<button
+								type="button"
+								class="block w-full text-left px-4 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--surface-hover)]"
+								@click="handleLogout"
+							>
+								Keluar
+							</button>
+						</div>
+					</Transition>
+				</div>
+
+				<!-- Hamburger -->
+				<button
+					type="button"
+					@click="isMobileMenuOpen = !isMobileMenuOpen"
+					class="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] focus:outline-none"
+					aria-label="Buka menu"
+				>
+					<i
+						class="mdi text-2xl leading-none"
+						:class="isMobileMenuOpen ? 'mdi-close' : 'mdi-menu'"
+					></i>
+				</button>
+			</div>
 		</header>
 
 		<!-- Overlay Mobile -->
 		<div
 			v-if="isMobileMenuOpen"
 			@click="isMobileMenuOpen = false"
-			class="fixed inset-0 bg-slate-900/40 z-40 md:hidden"
+			class="fixed inset-0 bg-[var(--overlay-bg)] z-40 md:hidden"
 		></div>
 
 		<!-- SIDEBAR -->
 		<aside
 			:class="[
-				'fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out',
+				'fixed md:sticky md:top-0 inset-y-0 left-0 z-50 w-72 md:w-64 md:h-screen bg-[var(--bg-subtle)] border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 ease-in-out',
 				isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
 			]"
 		>
 			<div class="flex flex-col min-h-0 flex-1">
 				<!-- Logo Brand -->
-				<div class="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100">
+				<div
+					class="h-16 flex items-center gap-2.5 px-5 border-b border-[var(--border)] shrink-0"
+				>
 					<span
-						class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-primary)] text-sm font-bold text-white shadow-md"
+						class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--button-bg)] to-[var(--button-bg-hover)] text-sm font-bold text-[var(--button-text)] shadow-md"
 						>K</span
 					>
-					<span class="text-lg font-bold tracking-tight text-slate-900">Katalogin</span>
+					<span class="text-lg font-bold tracking-tight text-[var(--text)]"
+						>Katalogin</span
+					>
 				</div>
 
 				<!-- Main Navigation -->
@@ -56,10 +232,10 @@
 							v-if="!item.children"
 							:to="safeRoute(item.route)"
 							:class="[
-								'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition duration-300',
+								'flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition duration-300',
 								isActiveRoute(item.route)
-									? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] font-semibold'
-									: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+									? 'bg-gradient-to-r from-[var(--button-bg)] to-transparent text-[var(--button-text)] font-semibold'
+									: 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]',
 							]"
 							@click="isMobileMenuOpen = false"
 						>
@@ -68,8 +244,8 @@
 								:class="[
 									`mdi-${item.icon}`,
 									isActiveRoute(item.route)
-										? 'text-[var(--color-primary)]'
-										: 'text-slate-400',
+										? 'text-[var(--button-text)]'
+										: 'text-[var(--icon)]',
 								]"
 							></i>
 							<span>{{ item.name }}</span>
@@ -81,10 +257,10 @@
 								type="button"
 								@click="toggleSubmenu(item.name)"
 								:class="[
-									'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition duration-300',
+									'flex w-full items-center justify-between gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition duration-300',
 									hasActiveChild(item)
-										? 'text-[var(--color-primary)] bg-[var(--color-primary-light)]/60'
-										: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+										? 'text-[var(--button-text)] bg-gradient-to-r from-[var(--button-bg)] to-transparent'
+										: 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]',
 								]"
 							>
 								<span class="flex items-center gap-3">
@@ -93,15 +269,20 @@
 										:class="[
 											`mdi-${item.icon}`,
 											hasActiveChild(item)
-												? 'text-[var(--color-primary)]'
-												: 'text-slate-400',
+												? 'text-[var(--button-text)]'
+												: 'text-[var(--icon)]',
 										]"
 									></i>
 									<span>{{ item.name }}</span>
 								</span>
 								<i
-									class="mdi mdi-chevron-down text-base shrink-0 text-slate-400 transition-transform duration-300"
-									:class="openSubmenu === item.name ? 'rotate-180' : ''"
+									class="mdi mdi-chevron-down text-base shrink-0 transition-transform duration-300"
+									:class="[
+										openSubmenu === item.name ? 'rotate-180' : '',
+										hasActiveChild(item)
+											? 'text-[var(--button-text)]'
+											: 'text-[var(--icon)]',
+									]"
 								></i>
 							</button>
 
@@ -114,7 +295,7 @@
 							>
 								<div
 									v-show="openSubmenu === item.name"
-									class="mt-1 ml-4 space-y-0.5 border-l border-slate-200 pl-4 overflow-hidden"
+									class="mt-1 ml-4 space-y-0.5 border-l border-[var(--border)] pl-4 overflow-hidden"
 								>
 									<router-link
 										v-for="child in item.children"
@@ -123,8 +304,8 @@
 										:class="[
 											'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition duration-300',
 											isActiveRoute(child.route)
-												? 'text-[var(--color-primary)] font-semibold'
-												: 'text-slate-500 hover:text-slate-900 hover:bg-slate-100',
+												? 'text-[var(--text-accent-strong)] font-semibold'
+												: 'text-[var(--icon)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)]',
 										]"
 										@click="isMobileMenuOpen = false"
 									>
@@ -134,8 +315,8 @@
 											:class="[
 												`mdi-${child.icon}`,
 												isActiveRoute(child.route)
-													? 'text-[var(--color-primary)]'
-													: 'text-slate-400',
+													? 'text-[var(--text-accent-strong)]'
+													: 'text-[var(--icon)]',
 											]"
 										></i>
 										<span>{{ child.name }}</span>
@@ -148,50 +329,141 @@
 			</div>
 
 			<!-- Bottom: Role badge + Settings -->
-			<div class="border-t border-slate-100 p-4 space-y-3">
+			<div class="border-t border-[var(--border-subtle)] p-4 space-y-3 shrink-0">
 				<div
-					class="flex items-center gap-2 rounded-xl bg-[var(--color-accent-light)] px-3 py-2"
+					class="flex items-center gap-2 rounded-xl bg-[var(--surface-accent)] px-3 py-2"
 				>
-					<span class="h-1.5 w-1.5 rounded-full bg-[var(--color-accent-active)]"></span>
-					<span class="text-xs font-semibold text-slate-700 capitalize">{{ role }}</span>
+					<span class="h-1.5 w-1.5 rounded-full bg-[var(--button-bg)]"></span>
+					<span
+						class="text-xs font-semibold text-[var(--text-accent-strong)] capitalize"
+						>{{ role }}</span
+					>
 				</div>
 			</div>
 		</aside>
 
 		<!-- CONTENT AREA -->
-		<div class="flex-1 flex flex-col min-w-0">
-			<!-- Top Navbar -->
+		<div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+			<!-- Top Navbar (desktop only, mobile version is in the mobile header above) -->
 			<header
-				class="h-16 border-b border-slate-200 bg-white/95 backdrop-blur-sm px-4 md:px-8 flex items-center justify-between sticky top-0 z-30"
+				class="hidden md:flex h-16 border-b border-[var(--border)] bg-[var(--bg-subtle)]/95 backdrop-blur-sm px-4 md:px-8 items-center justify-between sticky top-0 z-30 shrink-0"
 			>
 				<!-- Search -->
-				<div class="flex-1 max-w-md relative">
-					<!-- <span
-						class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"
-					>
-						<i class="mdi mdi-magnify text-base leading-none"></i>
-					</span>
-					<input
-						type="text"
-						placeholder="Cari..."
-						class="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm text-slate-700 placeholder-slate-400 border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
-					/> -->
-				</div>
+				<div class="flex-1 max-w-md relative"></div>
 
 				<!-- Right Menu -->
 				<div class="flex items-center gap-4">
+					<!-- Toggle Dark Mode -->
 					<button
 						type="button"
-						class="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition duration-300 hover:bg-slate-100 hover:text-slate-900 focus:outline-none"
-						aria-label="Notifikasi"
+						@click="toggleTheme"
+						class="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus:outline-none"
+						:aria-label="
+							theme.mode === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'
+						"
 					>
-						<i class="mdi mdi-bell-outline text-lg leading-none"></i>
-						<span
-							class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[var(--color-accent-active)] ring-2 ring-white"
-						></span>
+						<i
+							class="mdi text-lg leading-none"
+							:class="
+								theme.mode === 'dark'
+									? 'mdi-white-balance-sunny'
+									: 'mdi-weather-night'
+							"
+						></i>
 					</button>
 
-					<div class="h-5 w-px bg-slate-200"></div>
+					<!-- Notifikasi -->
+					<div class="relative">
+						<button
+							ref="notifButtonRef"
+							type="button"
+							@click="openNotifications"
+							class="relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition duration-300 hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus:outline-none"
+							aria-label="Notifikasi"
+						>
+							<i class="mdi mdi-bell-outline text-lg leading-none"></i>
+							<span
+								v-if="unreadCount > 0"
+								class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--button-bg)] text-[var(--button-text)] px-1 text-[10px] font-bold ring-2 ring-[var(--bg-subtle)]"
+							>
+								{{ unreadCount > 9 ? "9+" : unreadCount }}
+							</span>
+						</button>
+
+						<Transition
+							enter-active-class="transition duration-150 ease-out"
+							enter-from-class="opacity-0 scale-95 -translate-y-1"
+							enter-to-class="opacity-100 scale-100 translate-y-0"
+							leave-active-class="transition duration-100 ease-in"
+							leave-from-class="opacity-100 scale-100 translate-y-0"
+							leave-to-class="opacity-0 scale-95 -translate-y-1"
+						>
+							<div
+								v-if="isNotifOpen"
+								ref="notifMenuRef"
+								class="absolute right-0 mt-2 w-80 bg-[var(--bg-subtle)] rounded-xl border border-[var(--border)] shadow-xl py-1 z-50 origin-top-right max-h-96 overflow-y-auto"
+							>
+								<div class="flex items-center justify-between px-4 py-2">
+									<span
+										class="text-xs font-semibold text-[var(--icon)] uppercase tracking-wide"
+									>
+										Notifikasi
+									</span>
+									<button
+										v-if="unreadCount > 0"
+										type="button"
+										@click="handleMarkAllRead"
+										class="text-xs font-medium text-[var(--text-accent-strong)] hover:underline"
+									>
+										Tandai semua dibaca
+									</button>
+								</div>
+
+								<p
+									v-if="!notifications.data || notifications.data.length === 0"
+									class="px-4 py-6 text-center text-sm text-[var(--icon)]"
+								>
+									Tidak ada notifikasi
+								</p>
+
+								<button
+									v-for="notif in notifications.data"
+									:key="notif.name"
+									type="button"
+									@click="handleNotifClick(notif)"
+									:class="[
+										'flex w-full items-start gap-3 px-4 py-2.5 text-left transition duration-200 hover:bg-[var(--surface-hover)]',
+										!notif.read ? 'bg-[var(--surface-accent-hover)]' : '',
+									]"
+								>
+									<span
+										class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-muted)]"
+									>
+										<i
+											class="mdi text-base leading-none"
+											:class="`mdi-${notifIcon(notif)}`"
+										></i>
+									</span>
+									<span class="flex-1 min-w-0">
+										<span
+											class="block text-sm text-[var(--text-muted)] line-clamp-2"
+											>{{ notif.subject }}</span
+										>
+										<span
+											class="block text-[11px] text-[var(--icon)] mt-0.5"
+											>{{ notif.creation }}</span
+										>
+									</span>
+									<span
+										v-if="!notif.read"
+										class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)]"
+									></span>
+								</button>
+							</div>
+						</Transition>
+					</div>
+
+					<div class="h-5 w-px bg-[var(--border)]"></div>
 
 					<!-- Profile Dropdown -->
 					<div class="relative">
@@ -202,20 +474,20 @@
 							class="flex items-center gap-2.5 focus:outline-none"
 						>
 							<img
-								:src="user.avatar"
+								:src="user.avatar ? `${apiUrl}${user.avatar}` : ''"
 								alt="Avatar"
-								class="h-8 w-8 rounded-full object-cover ring-2 ring-slate-100"
+								class="h-8 w-8 rounded-full object-cover ring-2 ring-[var(--button-bg)]/40"
 							/>
 							<span class="hidden sm:flex flex-col items-start leading-tight">
-								<span class="text-sm font-semibold text-slate-800">{{
+								<span class="text-sm font-semibold text-[var(--text)]">{{
 									user.name
 								}}</span>
-								<span class="text-[11px] text-slate-400 capitalize">{{
+								<span class="text-[11px] text-[var(--icon)] capitalize">{{
 									role
 								}}</span>
 							</span>
 							<i
-								class="mdi mdi-chevron-down text-base leading-none text-slate-400"
+								class="mdi mdi-chevron-down text-base leading-none text-[var(--icon)]"
 							></i>
 						</button>
 
@@ -230,24 +502,24 @@
 							<div
 								v-if="isProfileOpen"
 								ref="profileMenuRef"
-								class="absolute right-0 mt-2 w-48 bg-white rounded-xl border border-slate-200 shadow-xl py-1 z-50 origin-top-right"
+								class="absolute right-0 mt-2 w-48 bg-[var(--bg-subtle)] rounded-xl border border-[var(--border)] shadow-xl py-1 z-50 origin-top-right"
 							>
 								<router-link
-									:to="safeRoute('profile')"
-									class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+									:to="safeRoute('Profile')"
+									class="block px-4 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
 									@click="isProfileOpen = false"
 									>Profil Saya</router-link
 								>
 								<router-link
-									:to="safeRoute('settings.index')"
-									class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+									:to="safeRoute('Settings')"
+									class="block px-4 py-2 text-sm text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]"
 									@click="isProfileOpen = false"
 									>Pengaturan</router-link
 								>
-								<div class="my-1 border-t border-slate-100"></div>
+								<div class="my-1 border-t border-[var(--border-subtle)]"></div>
 								<button
 									type="button"
-									class="block w-full text-left px-4 py-2 text-sm text-[var(--color-danger)] hover:bg-slate-50"
+									class="block w-full text-left px-4 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--surface-hover)]"
 									@click="handleLogout"
 								>
 									Keluar
@@ -263,52 +535,118 @@
 				<slot />
 			</main>
 		</div>
+
+		<!-- Modal Detail Notifikasi -->
+		<Transition
+			enter-active-class="transition duration-200 ease-out"
+			enter-from-class="opacity-0"
+			enter-to-class="opacity-100"
+			leave-active-class="transition duration-150 ease-in"
+			leave-from-class="opacity-100"
+			leave-to-class="opacity-0"
+		>
+			<div
+				v-if="selectedNotif"
+				class="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--overlay-bg)] p-4"
+				@click.self="closeNotifDetail"
+			>
+				<div
+					class="w-full max-w-lg bg-[var(--bg-subtle)] rounded-2xl shadow-2xl overflow-hidden"
+				>
+					<div
+						class="flex items-start justify-between gap-4 px-6 py-4 border-b border-[var(--border-subtle)]"
+					>
+						<h3 class="text-base font-semibold text-[var(--text)]">
+							{{ selectedNotif.subject }}
+						</h3>
+						<button
+							type="button"
+							@click="closeNotifDetail"
+							class="text-[var(--icon)] hover:text-[var(--text-muted)] shrink-0"
+							aria-label="Tutup"
+						>
+							<i class="mdi mdi-close text-xl leading-none"></i>
+						</button>
+					</div>
+					<div class="px-6 py-4 max-h-96 overflow-y-auto">
+						<p class="text-sm text-[var(--text-muted)] whitespace-pre-line">
+							{{ selectedNotif.email_content || "Tidak ada detail tambahan." }}
+						</p>
+						<p class="text-xs text-[var(--icon)] mt-4">
+							{{ selectedNotif.creation }}
+						</p>
+					</div>
+					<div
+						class="flex justify-end gap-2 px-6 py-3 border-t border-[var(--border-subtle)] bg-[var(--surface-hover)]/50"
+					>
+						<button
+							type="button"
+							@click="closeNotifDetail"
+							class="px-4 py-2 text-sm font-medium rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
+						>
+							Tutup
+						</button>
+					</div>
+				</div>
+			</div>
+		</Transition>
 	</div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { session } from "../auth/session.js";
+import { session, ensureUserRole } from "../auth/session.js";
+import { theme, toggleTheme } from "../auth/theme.js";
 import { useRoute, useRouter } from "vue-router";
 import { menuItems, filterMenuByRole } from "../helpers/menu.js";
-import { createResource } from "frappe-ui";
+import { createResource, call } from "frappe-ui";
+import { io } from "socket.io-client";
 
 import Swal from "sweetalert2";
-// ---------------------------------------------------------------------
-// Props: role user saat ini datang dari luar (mis. dari auth store)
-// ---------------------------------------------------------------------
-const props = defineProps({
-	role: {
-		type: String,
-		default: "admin", // 'owner' | 'admin'
-	},
-	user: {
-		type: Object,
-		default: () => ({
-			name: "Tom Cook",
-			avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-		}),
-	},
+
+const apiUrl = import.meta.env.VITE_API_URL;
+const siteName = import.meta.env.VITE_SITE_NAME;
+const socketioPort = import.meta.env.VITE_SOCKETIO_PORT;
+
+const role = computed(() => session.currentUser.role);
+const user = computed(() => session.currentUser);
+
+onMounted(async () => {
+	await ensureUserRole();
 });
 
-const role = computed(() => props.role);
-const user = computed(() => props.user);
-
-// ---------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------
 const isMobileMenuOpen = ref(false);
 const isProfileOpen = ref(false);
 const openSubmenu = ref(null);
 const profileButtonRef = ref(null);
 const profileMenuRef = ref(null);
 
+const isNotifOpen = ref(false);
+const notifButtonRef = ref(null);
+const notifMenuRef = ref(null);
+const notifButtonMobileRef = ref(null);
+const notifMenuMobileRef = ref(null);
+const profileButtonMobileRef = ref(null);
+const profileMenuMobileRef = ref(null);
+
 function handleClickOutside(event) {
-	if (!isProfileOpen.value) return;
-	const clickedButton = profileButtonRef.value?.contains(event.target);
-	const clickedMenu = profileMenuRef.value?.contains(event.target);
-	if (!clickedButton && !clickedMenu) {
-		isProfileOpen.value = false;
+	if (isProfileOpen.value) {
+		const clickedButton =
+			profileButtonRef.value?.contains(event.target) ||
+			profileButtonMobileRef.value?.contains(event.target);
+		const clickedMenu =
+			profileMenuRef.value?.contains(event.target) ||
+			profileMenuMobileRef.value?.contains(event.target);
+		if (!clickedButton && !clickedMenu) isProfileOpen.value = false;
+	}
+	if (isNotifOpen.value) {
+		const clickedNotifButton =
+			notifButtonRef.value?.contains(event.target) ||
+			notifButtonMobileRef.value?.contains(event.target);
+		const clickedNotifMenu =
+			notifMenuRef.value?.contains(event.target) ||
+			notifMenuMobileRef.value?.contains(event.target);
+		if (!clickedNotifButton && !clickedNotifMenu) isNotifOpen.value = false;
 	}
 }
 
@@ -318,9 +656,6 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 const route = useRoute();
 const router = useRouter();
 
-// Cegah crash kalau nama route di menu.js belum terdaftar di router.
-// Kalau tidak ketemu, link jadi non-aktif ('#') dan warning muncul di console
-// supaya gampang ketahuan route mana yang belum dibuat.
 function safeRoute(routeName) {
 	if (!routeName) return "#";
 	if (router.hasRoute(routeName)) return { name: routeName };
@@ -328,7 +663,6 @@ function safeRoute(routeName) {
 	return "#";
 }
 
-// Menu difilter sesuai role, sumbernya dari menu.js
 const visibleMenu = computed(() => filterMenuByRole(menuItems, role.value));
 
 function toggleSubmenu(name) {
@@ -337,25 +671,10 @@ function toggleSubmenu(name) {
 
 function isActiveRoute(routeName) {
 	if (!routeName) return false;
-
-	// 1) Exact match — halaman ini persis route yang di-klik
 	if (route.name === routeName) return true;
-
-	// 2) Nested route — kalau di router.js halaman detail/edit didaftarkan
-	//    sebagai children dari route ini, Vue Router otomatis memasukkan
-	//    parent-nya ke route.matched.
 	if (route.matched.some((r) => r.name === routeName)) return true;
-
-	// 3) Override manual lewat meta — dipakai kalau mau eksplisit nunjuk
-	//    halaman ini "milik" menu tertentu, terlepas dari struktur URL-nya.
-	//      { path: '/produk/:id/edit', name: 'produk.edit',
-	//        meta: { activeMenu: 'produk.index' } }
 	if (route.meta?.activeMenu === routeName) return true;
 
-	// 4) Path-prefix — paling praktis: asal URL diawali path menu ini,
-	//    otomatis aktif seberapa pun dalamnya. Contoh: menu "Produk" (/produk)
-	//    tetap aktif walau bukanya /produk/semua/kategori atau /produk/5/edit,
-	//    tanpa perlu setting nested route atau meta satu-satu.
 	const basePath = resolvePath(routeName);
 	if (
 		basePath &&
@@ -368,8 +687,6 @@ function isActiveRoute(routeName) {
 	return false;
 }
 
-// Ambil path asli dari nama route (buat pengecekan prefix di atas).
-// Kalau nama route belum terdaftar, balikin null biar nggak error.
 function resolvePath(routeName) {
 	if (!router.hasRoute(routeName)) return null;
 	return router.resolve({ name: routeName }).path;
@@ -389,8 +706,8 @@ async function handleLogout() {
 		showCancelButton: true,
 		confirmButtonText: "Ya, Logout",
 		cancelButtonText: "Batal",
-		confirmButtonColor: "#dc2626",
-		cancelButtonColor: "#6b7280",
+		confirmButtonColor: "var(--color-danger)",
+		cancelButtonColor: "var(--gray-9)",
 		reverseButtons: true,
 	});
 
@@ -426,10 +743,6 @@ function hasActiveChild(item) {
 	return item.children?.some((child) => isActiveRoute(child.route)) ?? false;
 }
 
-// ---------------------------------------------------------------------
-// Animasi expand/collapse submenu — dihitung dari scrollHeight elemen
-// supaya transisinya smooth walau jumlah item submenu beda-beda tingginya
-// ---------------------------------------------------------------------
 function beforeExpand(el) {
 	el.style.height = "0";
 	el.style.opacity = "0";
@@ -459,10 +772,127 @@ function collapse(el, done) {
 	el.addEventListener("transitionend", done, { once: true });
 }
 
-// Buka otomatis submenu yang sedang aktif saat halaman dimuat
 visibleMenu.value.forEach((item) => {
 	if (item.children && hasActiveChild(item)) {
 		openSubmenu.value = item.name;
 	}
+});
+
+const notifications = createResource({
+	url: "frappe.client.get_list",
+	params: {
+		doctype: "Notification Log",
+		fields: [
+			"name",
+			"subject",
+			"type",
+			"document_type",
+			"document_name",
+			"read",
+			"creation",
+			"email_content",
+		],
+		filters: { for_user: session.currentUser.id },
+		order_by: "creation desc",
+		limit_page_length: 10,
+	},
+	auto: true,
+});
+
+const unreadCount = computed(() => notifications.data?.filter((n) => !n.read)?.length ?? 0);
+
+const selectedNotif = ref(null);
+
+function openNotifications() {
+	isNotifOpen.value = !isNotifOpen.value;
+	if (isNotifOpen.value) {
+		notifications.reload();
+	}
+}
+
+async function markNotifAsRead(notifName) {
+	try {
+		await call("bizpage.api.dashboard_api.mark_notification_read", {
+			name: notifName,
+		});
+		return true;
+	} catch (error) {
+		console.error("Gagal tandai notifikasi sebagai dibaca:", error);
+		return false;
+	}
+}
+
+async function handleNotifClick(notif) {
+	selectedNotif.value = notif;
+	isNotifOpen.value = false;
+
+	if (!notif.read) {
+		const success = await markNotifAsRead(notif.name);
+		if (success) {
+			notif.read = 1;
+			notifications.reload();
+		}
+	}
+}
+
+function closeNotifDetail() {
+	selectedNotif.value = null;
+}
+
+async function handleMarkAllRead() {
+	try {
+		await call("bizpage.api.dashboard_api.mark_all_notifications_read");
+		notifications.reload();
+	} catch (error) {
+		console.error("Gagal tandai semua notifikasi sebagai dibaca:", error);
+	}
+}
+
+function notifIcon(notif) {
+	if (notif.document_type === "Sales Order" || notif.document_type === "Pesanan") {
+		return "cart-outline";
+	}
+	const typeMap = {
+		Alert: "alert-circle-outline",
+		Mention: "at",
+		Assignment: "clipboard-check-outline",
+		Share: "share-variant",
+		"Energy Point": "star-outline",
+	};
+	return typeMap[notif.type] || "bell-outline";
+}
+
+let socket = null;
+
+function connectNotificationSocket() {
+	const backend = new URL(apiUrl);
+	const port = socketioPort ? `:${socketioPort}` : "";
+	const url = `${backend.protocol}//${backend.hostname}${port}/${siteName}`;
+	return io(url, { withCredentials: true });
+}
+
+let notifInterval = null;
+
+function handleVisibilityChange() {
+	if (document.visibilityState === "visible") {
+		notifications.reload();
+	}
+}
+
+onMounted(() => {
+	socket = connectNotificationSocket();
+	socket.on("notification", () => {
+		notifications.reload();
+	});
+
+	document.addEventListener("visibilitychange", handleVisibilityChange);
+	notifInterval = setInterval(() => notifications.reload(), 120000);
+});
+
+onUnmounted(() => {
+	socket?.off("notification");
+	socket?.disconnect();
+	document.removeEventListener("visibilitychange", handleVisibilityChange);
+	if (notifInterval) clearInterval(notifInterval);
 });
 </script>

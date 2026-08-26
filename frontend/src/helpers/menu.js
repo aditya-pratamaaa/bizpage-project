@@ -44,12 +44,6 @@ export const menuItems = [
 				roles: ["owner", "admin"],
 			},
 			{
-				name: "Tambah Produk",
-				route: "produk.create",
-				icon: "plus-box-outline",
-				roles: ["owner", "admin"],
-			},
-			{
 				name: "Kategori",
 				route: "produk.kategori",
 				icon: "shape-outline",
@@ -57,7 +51,7 @@ export const menuItems = [
 			},
 			{
 				name: "Item",
-				route: "produk.item",
+				route: "Item",
 				icon: "package-variant",
 				roles: ["owner"],
 			},
@@ -108,7 +102,7 @@ export const menuItems = [
 		children: [
 			{
 				name: "Pengaturan Website",
-				route: "website.settings",
+				route: "Website Settings",
 				icon: "cog-outline",
 				roles: ["owner", "admin"],
 			},

@@ -1,37 +1,86 @@
+/* ==========================================================================
+   THEME TOKENS (SIMPLIFIED) — Lime + Gray, 1–12 step scale
+   Cara pakai:
+   1. Background   -> step 1-2
+   2. Komponen interaktif (default/hover/active) -> step 3-5
+   3. Border/pemisah (subtle/default/hover)      -> step 6-8
+   4. Warna solid (tombol, dll)                  -> step 9-10
+   5. Teks (low/high contrast)                   -> step 11-12
+   ========================================================================== */
+
+/* ---------- LIGHT MODE (default) ---------- */
+:root,
+.light,
+.light-theme {
+	/* Lime */
+	--lime-1: #f5f6f3;
+	--lime-2: #eff3ec;
+	--lime-3: #e0f1d0;
+	--lime-4: #d1ebb7;
+	--lime-5: #c2e2a0;
+	--lime-6: #b1d48b;
+	--lime-7: #9dc272;
+	--lime-8: #82ad4a;
+	--lime-9: #aae759;
+	--lime-10: #9ede42;
+	--lime-11: #527423;
+	--lime-12: #32411f;
+
+	/* Gray */
+	--gray-1: #f4f5f8;
+	--gray-2: #eef2f7;
+	--gray-3: #e3e9f1;
+	--gray-4: #d9e1eb;
+	--gray-5: #d0dae6;
+	--gray-6: #c7d2e1;
+	--gray-7: #b9c7d9;
+	--gray-8: #a1b4cd;
+	--gray-9: #73869e;
+	--gray-10: #697c93;
+	--gray-11: #4e5d70;
+	--gray-12: #17202c;
+
+	--color-background: #f7faf4;
+}
+
+/* ---------- DARK MODE ---------- */
+.dark,
+.dark-theme {
+	/* Lime */
+	--lime-1: #1c2019;
+	--lime-2: #21261c;
+	--lime-3: #2b3521;
+	--lime-4: #344125;
+	--lime-5: #3d4e2a;
+	--lime-6: #465b2f;
+	--lime-7: #516934;
+	--lime-8: #5d7b39;
+	--lime-9: #c1ff72;
+	--lime-10: #bcf379;
+	--lime-11: #b3e970;
+	--lime-12: #dbf9bd;
+
+	/* Gray */
+	--gray-1: #1b1f24;
+	--gray-2: #21262b;
+	--gray-3: #282f37;
+	--gray-4: #2c353f;
+	--gray-5: #313b47;
+	--gray-6: #364351;
+	--gray-7: #405062;
+	--gray-8: #536881;
+	--gray-9: #5f748d;
+	--gray-10: #6c8097;
+	--gray-11: #a7b7c9;
+	--gray-12: #eaeff4;
+
+	--color-background: #1a1f26;
+}
+
+/* ---------- FONT & RADIUS (tetap sama di kedua mode) ---------- */
 :root {
 	--font-body: "Inter", -apple-system, sans-serif;
 	--font-display: "Plus Jakarta Sans", -apple-system, sans-serif;
-
-	--color-primary: #2d3e70;
-	--color-primary-hover: #3b4f8c;
-	--color-primary-active: #1f2b4e;
-	--color-primary-light: #e6e9f2;
-
-	--color-accent: #c1ff72;
-	--color-accent-hover: #adf055;
-	--color-accent-active: #99db3f;
-	--color-accent-light: #eeffd9;
-
-	--color-white: #ffffff;
-	--color-black: #000000;
-
-	--color-gray-50: #f9fafb;
-	--color-gray-100: #f3f4f6;
-	--color-gray-200: #e5e7eb;
-	--color-gray-300: #d1d5db;
-	--color-gray-400: #9ca3af;
-	--color-gray-500: #6b7280;
-	--color-gray-600: #4b5563;
-	--color-gray-700: #374151;
-	--color-gray-800: #1f2937;
-	--color-gray-900: #111827;
-
-	--color-danger: #ef4444;
-	--color-danger-hover: #dc2626;
-	--color-success: #22c55e;
-	--color-success-hover: #16a34a;
-
-	--color-focus-ring: rgba(45, 62, 112, 0.45);
 
 	--radius-sm: 4px;
 	--radius-md: 8px;
@@ -41,6 +90,8 @@
 
 body {
 	font-family: var(--font-body);
+	background: var(--color-background);
+	color: var(--gray-12);
 }
 
 h1,
@@ -51,3 +102,75 @@ h5,
 h6 {
 	font-family: var(--font-display);
 }
+
+/* ==========================================================================
+   ALIAS — nama gampang, tinggal pakai langsung tanpa mikir angka step
+   Berlaku otomatis di light & dark mode (karena cuma nunjuk ke step,
+   dan nilai step-nya udah beda sendiri di .dark)
+   ========================================================================== */
+:root {
+	/* --- Background --- */
+	--bg-page: var(--gray-1); /* background utama halaman */
+	--bg-subtle: var(--gray-2); /* background section/card lembut */
+
+	--bg-accent: var(--lime-1); /* background bernuansa lime, halus */
+	--bg-accent-subtle: var(--lime-2);
+
+	--bg-clear: #ffffff;
+
+	/* --- Komponen / permukaan interaktif (card, input, dsb) --- */
+	--surface: var(--gray-3);
+	--surface-hover: var(--gray-4);
+	--surface-active: var(--gray-5);
+
+	/* --- Border --- */
+	--border-subtle: var(--gray-6);
+	--border: var(--gray-7);
+	--border-hover: var(--gray-8);
+
+	/* --- Teks --- */
+	--text-muted: var(--gray-11); /* teks sekunder, contrast rendah */
+	--text: var(--gray-12); /* teks utama, contrast tinggi */
+
+	--text-accent: var(--lime-11); /* teks pakai warna lime, tetap aksesibel */
+	--text-accent-strong: var(--lime-12);
+
+	--text-lime: var(--lime-10);
+
+	/* --- Tombol / elemen solid (pakai lime sebagai warna aksen utama) --- */
+	--button-bg: var(--lime-9);
+	--button-bg-hover: var(--lime-10);
+	--button-text: var(--lime-contrast, #1b2510);
+
+	--button-bg-secondary: var(--gray-9);
+	--button-bg-secondary-hover: var(--gray-10);
+	--button-text-secondary: #ffffff;
+
+	/* --- Permukaan beraksen lime (nav item aktif, badge, dsb) --- */
+	--surface-accent: var(--lime-3);
+	--surface-accent-hover: var(--lime-4);
+	--surface-accent-active: var(--lime-5);
+
+	/* --- Ikon netral (belum aktif/hover) --- */
+	--icon: var(--gray-9);
+
+	/* --- Overlay (backdrop modal/menu mobile) --- */
+	--overlay-bg: rgba(0, 0, 0, 0.5);
+
+	/* --- Warna status --- */
+	--color-danger: #e5484d;
+	--color-danger-hover: #dc3d43;
+}
+
+/* Contoh pakai:
+   .card       { background: var(--surface); border: 1px solid var(--border); }
+   .card:hover { background: var(--surface-hover); border-color: var(--border-hover); }
+   .btn        { background: var(--button-bg); color: var(--button-text); }
+   .btn:hover  { background: var(--button-bg-hover); }
+   .nav-active { background: var(--surface-accent); color: var(--text-accent); }
+   .icon       { color: var(--icon); }
+   .overlay    { background: var(--overlay-bg); }
+   .btn-danger { color: var(--color-danger); }
+   p           { color: var(--text); }
+   span.note   { color: var(--text-muted); }
+*/
